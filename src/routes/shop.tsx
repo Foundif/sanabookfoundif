@@ -9,14 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { AGE_GROUPS, CATEGORIES, fetchProducts } from "@/lib/shopify";
 
-type ShopSearch = { age?: string; category?: string; q?: string };
+type ShopSearch = { age?: string | undefined; category?: string | undefined; q?: string | undefined };
 
 export const Route = createFileRoute("/shop")({
-  validateSearch: (search: Record<string, unknown>): ShopSearch => ({
-    age: typeof search.age === "string" ? search.age : undefined,
-    category: typeof search.category === "string" ? search.category : undefined,
-    q: typeof search.q === "string" ? search.q : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): ShopSearch => {
+    const str = (key: string) => (typeof search[key] === "string" ? (search[key] as string) : undefined);
+    return { age: str("age"), category: str("category"), q: str("q") };
+  },
   head: () => ({
     meta: [
       { title: "Shop Children's Books by Age & Format | Sanabooks India" },
