@@ -144,7 +144,7 @@ function Shop() {
                   key={a.tag}
                   onClick={() =>
                     navigate({
-                      search: (prev) => ({
+                      search: (prev: ShopSearch) => ({
                         ...prev,
                         age: prev.age === a.tag ? undefined : a.tag,
                       }),
