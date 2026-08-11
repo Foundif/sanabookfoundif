@@ -40,7 +40,7 @@ export const Route = createFileRoute("/product/$handle")({
       ],
     };
   },
-  component: ProductDetail;
+  component: ProductDetail,
 });
 
 function ProductDetail() {
