@@ -170,7 +170,7 @@ function Shop() {
                   key={c}
                   onClick={() =>
                     navigate({
-                      search: (prev) => ({
+                      search: (prev: ShopSearch) => ({
                         ...prev,
                         category: prev.category === c ? undefined : c,
                       }),
