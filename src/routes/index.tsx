@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, GraduationCap, Gift, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import heroImage from "@/assets/hero-reading.jpg";
 import { Button } from "@/components/ui/button";
+import { PromoCarousel } from "@/components/PromoCarousel";
+import { FeaturedCollections } from "@/components/FeaturedCollections";
 import { ProductCard } from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AGE_GROUPS, fetchProducts, formatINR } from "@/lib/shopify";
+import { ARTICLES } from "@/lib/articles";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -93,24 +97,32 @@ function Home() {
             </dl>
           </div>
 
-          <div className="relative h-80 sm:h-96">
-            {HERO_COVERS.map((cover, i) => (
-              <div
-                key={cover.title}
-                className={`absolute ${cover.tilt} ${cover.tone} flex h-56 w-40 flex-col justify-between rounded-lg p-4 text-primary-foreground shadow-cover sm:h-72 sm:w-52`}
-                style={{
-                  left: `${i * 20 + 2}%`,
-                  top: `${i % 2 === 0 ? 4 : 22}%`,
-                  zIndex: i,
-                }}
-              >
-                <span className="text-[10px] font-bold tracking-[0.14em] uppercase opacity-90">
-                  {cover.label}
-                </span>
-                <span className="text-lg font-bold leading-tight">{cover.title}</span>
-              </div>
-            ))}
+          <div className="relative">
+            <img
+              src={heroImage}
+              alt="A mother and daughter reading a picture book together at home"
+              className="aspect-4/3 w-full rounded-2xl object-cover shadow-lift"
+              loading="eager"
+            />
+            <div className="pointer-events-none absolute -bottom-6 -left-4 hidden gap-3 sm:flex">
+              {HERO_COVERS.slice(0, 3).map((cover) => (
+                <div
+                  key={cover.title}
+                  className={`${cover.tilt} ${cover.tone} flex h-32 w-24 flex-col justify-between rounded-lg p-3 text-primary-foreground shadow-cover`}
+                >
+                  <span className="text-[9px] font-bold tracking-[0.14em] uppercase opacity-90">
+                    {cover.label}
+                  </span>
+                  <span className="text-xs font-bold leading-tight">{cover.title}</span>
+                </div>
+              ))}
+            </div>
+            <div className="absolute -top-4 -right-2 rounded-xl bg-surface px-4 py-3 shadow-lift">
+              <p className="text-xs font-bold">Hand-picked by educators</p>
+              <p className="text-[11px] text-muted-foreground">Every title age-checked</p>
+            </div>
           </div>
+
         </div>
 
         {/* Trust strip */}
@@ -130,6 +142,11 @@ function Home() {
           </div>
         </div>
       </section>
+
+      {/* Rotating promotions */}
+      <div className="pt-12">
+        <PromoCarousel />
+      </div>
 
       {/* Shop by age */}
       <section className="mx-auto max-w-7xl px-4 py-16">
@@ -246,6 +263,70 @@ function Home() {
           </div>
         </section>
       )}
+
+      {/* Featured collections tied to Shopify products */}
+      <FeaturedCollections />
+
+      {/* Testimonials */}
+      <section className="bg-cream py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <p className="eyebrow">Loved by parents</p>
+          <h2 className="mt-2 text-3xl font-bold">Why families keep coming back</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                title: "Age-fit, every time",
+                body: "Each title carries a clear age band checked by educators, so the book you order actually matches the child you have.",
+              },
+              {
+                title: "Built for India",
+                body: "₹ pricing inclusive of taxes, COD and UPI at checkout, GST invoicing for schools, and pincode-accurate delivery dates.",
+              },
+              {
+                title: "Bundles that make gifting easy",
+                body: "Curated sets ship in a kraft gift box with a hand-written note — free, and up to 25% off the single-book price.",
+              },
+            ].map((c) => (
+              <div key={c.title} className="rounded-xl border border-border bg-card p-6 shadow-shelf">
+                <h3 className="text-base font-bold">{c.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
+            Customer reviews appear on each product page once verified buyers submit them.
+          </p>
+        </div>
+      </section>
+
+      {/* Reading Room */}
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Reading Room</p>
+            <h2 className="mt-2 text-3xl font-bold">Guides for curious parents</h2>
+          </div>
+          <Link to="/reading-room" className="hidden items-center gap-1 text-sm font-semibold text-primary sm:flex">
+            All articles <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          {ARTICLES.slice(0, 3).map((a) => (
+            <Link
+              key={a.title}
+              to="/reading-room"
+              className="group overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-shadow hover:shadow-lift"
+            >
+              <span className={`block h-28 ${a.tone}`} />
+              <span className="block p-5">
+                <span className="eyebrow">{a.tag}</span>
+                <span className="mt-2 block text-sm font-bold group-hover:text-primary">{a.title}</span>
+                <span className="mt-2 block text-xs text-muted-foreground">{a.minutes} min read</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* Schools banner */}
       <section className="mx-auto max-w-7xl px-4 pb-4">

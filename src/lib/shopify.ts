@@ -36,8 +36,29 @@ export interface ShopifyProduct {
       }>;
     };
     options: Array<{ name: string; values: string[] }>;
+    metafields?: Array<{ key: string; value: string } | null>;
   };
 }
+
+/** Aggregate rating from Shopify's verified customer reviews metafields. */
+export function productRating(product: ShopifyProduct): { average: number; count: number } | null {
+  const fields = product.node.metafields ?? [];
+  const raw = fields.find((f) => f?.key === "rating")?.value;
+  const countRaw = fields.find((f) => f?.key === "rating_count")?.value;
+  if (!raw) return null;
+
+  let average = NaN;
+  try {
+    const parsed = JSON.parse(raw) as { value?: string } | number;
+    average = typeof parsed === "number" ? parsed : parseFloat(parsed.value ?? "");
+  } catch {
+    average = parseFloat(raw);
+  }
+  const count = countRaw ? parseInt(countRaw, 10) : 0;
+  if (!Number.isFinite(average) || average <= 0) return null;
+  return { average, count: Number.isFinite(count) ? count : 0 };
+}
+
 
 const PRODUCT_FIELDS = `
   id
@@ -62,7 +83,12 @@ const PRODUCT_FIELDS = `
     }
   }
   options { name values }
+  metafields(identifiers: [
+    { namespace: "reviews", key: "rating" },
+    { namespace: "reviews", key: "rating_count" }
+  ]) { key value }
 `;
+
 
 export const STOREFRONT_QUERY = `
   query GetProducts($first: Int!, $query: String) {
