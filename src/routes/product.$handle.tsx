@@ -1,23 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import {
-  BookOpen,
-  Check,
-  Gift,
-  Loader2,
-  MapPin,
-  RotateCcw,
-  ShoppingCart,
-  Truck,
-} from "lucide-react";
+import { BookOpen, Gift, Loader2, RotateCcw, ShoppingCart, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/ProductCard";
-import { fetchProductByHandle, fetchProducts, formatINR } from "@/lib/shopify";
+import { ProductReviews, Stars } from "@/components/ProductReviews";
+import { ShippingEstimator } from "@/components/ShippingEstimator";
+import { fetchProductByHandle, fetchProducts, formatINR, productRating } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
+
 
 export const Route = createFileRoute("/product/$handle")({
   head: ({ params }) => {
@@ -50,8 +43,6 @@ function ProductDetail() {
   const getCheckoutUrl = useCartStore((s) => s.getCheckoutUrl);
   const [activeImage, setActiveImage] = useState(0);
   const [variantIndex, setVariantIndex] = useState(0);
-  const [pincode, setPincode] = useState("");
-  const [pincodeChecked, setPincodeChecked] = useState(false);
 
   const { data: product, isLoading: loadingProduct } = useQuery({
     queryKey: ["product", handle],
@@ -66,7 +57,6 @@ function ProductDetail() {
   useEffect(() => {
     setActiveImage(0);
     setVariantIndex(0);
-    setPincodeChecked(false);
   }, [handle]);
 
   if (loadingProduct) {
@@ -107,6 +97,9 @@ function ProductDetail() {
       : 0;
   const ageTag = node.tags.find((t) => t.startsWith("age-"));
   const ageRange = ageTag ? ageTag.replace("age-", "").split("-") : null;
+  const rating = productRating(product);
+
+
 
   const add = async () => {
     if (!variant) return;
@@ -198,6 +191,18 @@ function ProductDetail() {
           <p className="mt-1 text-xs text-muted-foreground">
             Inclusive of all taxes · Free shipping over ₹499
           </p>
+          {rating ? (
+            <div className="mt-3 flex items-center gap-2">
+              <Stars value={rating.average} />
+              <span className="text-xs font-semibold">
+                {rating.average.toFixed(1)} · {rating.count} verified{" "}
+                {rating.count === 1 ? "review" : "reviews"}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground">No reviews yet</p>
+          )}
+
 
           {/* Age recommender */}
           {ageRange && (
@@ -272,36 +277,11 @@ function ProductDetail() {
             </Button>
           </div>
 
-          {/* Pincode check */}
-          <div className="mt-6 rounded-xl border border-border bg-card p-4">
-            <p className="eyebrow flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" /> Delivery check
-            </p>
-            <div className="mt-3 flex gap-2">
-              <Input
-                value={pincode}
-                onChange={(e) => {
-                  setPincode(e.target.value.replace(/\D/g, "").slice(0, 6));
-                  setPincodeChecked(false);
-                }}
-                placeholder="Enter 6-digit pincode"
-                inputMode="numeric"
-                aria-label="Pincode"
-              />
-              <Button
-                variant="secondary"
-                onClick={() => setPincodeChecked(pincode.length === 6)}
-                disabled={pincode.length !== 6}
-              >
-                Check
-              </Button>
-            </div>
-            {pincodeChecked && (
-              <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-leaf">
-                <Check className="h-3.5 w-3.5" /> Delivers to {pincode} in 3–4 days · COD available
-              </p>
-            )}
+          {/* Pincode-based shipping options & delivery dates */}
+          <div className="mt-6">
+            <ShippingEstimator subtotal={parseFloat(price)} />
           </div>
+
 
           <ul className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
@@ -318,13 +298,8 @@ function ProductDetail() {
         </div>
       </div>
 
-      {/* Reviews */}
-      <section className="mt-16 rounded-xl border border-border bg-card p-8">
-        <h2 className="text-xl font-bold">Reviews</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          No reviews yet. Verified reviews from parents will appear here once orders start shipping.
-        </p>
-      </section>
+      <ProductReviews product={product} />
+
 
       {/* Related */}
       {relatedItems.length > 0 && (

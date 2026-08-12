@@ -12,6 +12,7 @@ const NAV = [
   { label: "Shop", to: "/shop" },
   { label: "By Age", to: "/shop", search: { age: "age-3-5" } },
   { label: "Bundles", to: "/shop", search: { category: "Bundles" } },
+  { label: "Reading Room", to: "/reading-room" },
   { label: "Schools", to: "/schools" },
   { label: "About", to: "/about" },
 ];

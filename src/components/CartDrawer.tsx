@@ -10,11 +10,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ShippingEstimator } from "@/components/ShippingEstimator";
+import type { ShippingMethodId } from "@/lib/shipping";
 import { formatINR } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 
 export const CartButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [shipping, setShipping] = useState<{ method: ShippingMethodId; total: number } | null>(
+    null,
+  );
   const items = useCartStore((s) => s.items);
   const isLoading = useCartStore((s) => s.isLoading);
   const isSyncing = useCartStore((s) => s.isSyncing);
@@ -134,6 +139,14 @@ export const CartButton = () => {
                     </div>
                   ))}
                 </div>
+
+                <div className="mt-4 rounded-lg border border-border bg-card p-3">
+                  <ShippingEstimator
+                    subtotal={totalPrice}
+                    compact
+                    onSelect={(method, total) => setShipping({ method, total })}
+                  />
+                </div>
               </div>
 
               <div className="shrink-0 space-y-3 border-t border-border bg-background pt-4">
@@ -146,6 +159,20 @@ export const CartButton = () => {
                   <span className="text-sm font-semibold">Subtotal</span>
                   <span className="text-xl font-bold">{formatINR(totalPrice)}</span>
                 </div>
+                {shipping && (
+                  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                    <span>
+                      Shipping ·{" "}
+                      {shipping.method === "cod"
+                        ? "Cash on delivery"
+                        : shipping.method === "express"
+                          ? "Express"
+                          : "Standard"}
+                    </span>
+                    <span>{formatINR(shipping.total - totalPrice)}</span>
+                  </div>
+                )}
+
                 <Button
                   onClick={handleCheckout}
                   className="w-full"
