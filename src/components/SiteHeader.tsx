@@ -54,7 +54,7 @@ export function SiteHeader() {
                   <Link
                     key={item.label}
                     to={item.to}
-                    search={item.search as never}
+                    search={item.search as never} params={(item as { params?: Record<string,string> }).params as never}
                     className="rounded-md px-3 py-2 text-sm font-semibold hover:bg-secondary"
                   >
                     {item.label}
@@ -89,7 +89,7 @@ export function SiteHeader() {
               <Link
                 key={item.label}
                 to={item.to}
-                search={item.search as never}
+                search={item.search as never} params={(item as { params?: Record<string,string> }).params as never}
                 className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
               >
                 {item.label}
