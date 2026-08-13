@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatINR, type ShopifyProduct } from "@/lib/shopify";
+import { Stars } from "@/components/ProductReviews";
+import { formatINR, productRating, type ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 
@@ -18,6 +19,7 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
   const node = product.node;
   const variant = node.variants.edges[0]?.node;
   const image = node.images.edges[0]?.node;
+  const hoverImage = node.images.edges[1]?.node;
   const compareAt = variant?.compareAtPrice?.amount;
   const price = variant?.price.amount ?? node.priceRange.minVariantPrice.amount;
   const discount =
@@ -25,6 +27,8 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
       ? Math.round((1 - parseFloat(price) / parseFloat(compareAt)) * 100)
       : 0;
   const age = ageLabel(node.tags);
+  const rating = productRating(product);
+  const freeShip = parseFloat(price) >= 499;
 
   const handleAddToCart = async () => {
     if (!variant) return;
@@ -43,38 +47,80 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
   };
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-shadow hover:shadow-lift">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lift">
       <Link
         to="/product/$handle"
         params={{ handle: node.handle }}
         className="relative block aspect-4/5 overflow-hidden bg-secondary"
       >
         {image ? (
-          <img
-            src={image.url}
-            alt={image.altText ?? node.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
+          <>
+            <img
+              src={image.url}
+              alt={image.altText ?? node.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            />
+            {hoverImage && (
+              <img
+                src={hoverImage.url}
+                alt=""
+                loading="lazy"
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              />
+            )}
+          </>
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
             No cover
           </div>
         )}
-        {discount > 0 && (
-          <span className="absolute top-2 left-2 rounded-full bg-saffron px-2 py-0.5 text-[10px] font-bold text-saffron-foreground">
-            {discount}% off
-          </span>
-        )}
+
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-navy/45 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        <span className="absolute top-2 left-2 flex flex-col gap-1">
+          {discount > 0 && (
+            <span className="rounded-full bg-saffron px-2 py-0.5 text-[10px] font-bold text-saffron-foreground">
+              {discount}% off
+            </span>
+          )}
+          {node.tags.includes("bestseller") && (
+            <span className="rounded-full bg-navy px-2 py-0.5 text-[10px] font-bold text-navy-foreground">
+              Bestseller
+            </span>
+          )}
+          {node.tags.includes("bundle") && (
+            <span className="rounded-full bg-leaf px-2 py-0.5 text-[10px] font-bold text-leaf-foreground">
+              Bundle
+            </span>
+          )}
+        </span>
+
         {age && (
-          <span className="absolute top-2 right-2 rounded-full bg-surface/90 px-2 py-0.5 text-[10px] font-bold text-primary">
+          <span className="absolute top-2 right-2 rounded-full bg-surface/90 px-2 py-0.5 text-[10px] font-bold text-primary shadow-shelf">
             {age}
           </span>
         )}
+
+        <span className="absolute bottom-2 left-2 rounded-full bg-surface/95 px-2.5 py-1 text-[10px] font-bold text-primary opacity-0 shadow-shelf transition-all duration-300 group-hover:opacity-100">
+          Quick view
+        </span>
       </Link>
 
       <div className="flex flex-1 flex-col p-3">
-        <p className="eyebrow">{node.productType || "Books"}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="eyebrow truncate">{node.productType || "Books"}</p>
+          {rating && (
+            <span className="flex shrink-0 items-center gap-1">
+              <Stars value={rating.average} />
+              <span className="text-[10px] font-semibold text-muted-foreground">
+                {rating.average.toFixed(1)}
+              </span>
+            </span>
+          )}
+        </div>
+
         <Link
           to="/product/$handle"
           params={{ handle: node.handle }}
@@ -95,10 +141,16 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
           )}
         </div>
 
+        {freeShip && (
+          <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-leaf">
+            <Truck className="h-3 w-3" /> Free shipping
+          </p>
+        )}
+
         <Button
           onClick={handleAddToCart}
           disabled={isLoading || !variant}
-          className="mt-3 w-full"
+          className="mt-3 w-full rounded-full"
           size="sm"
         >
           {isLoading ? (
