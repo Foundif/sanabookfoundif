@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ReadingRoomRouteImport } from './routes/reading-room'
 import { Route as SchoolsRouteImport } from './routes/schools'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as AgeTagRouteImport } from './routes/age.$tag'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 
 const IndexRoute = IndexRouteImport.update({
@@ -24,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReadingRoomRoute = ReadingRoomRouteImport.update({
@@ -41,6 +48,11 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgeTagRoute = AgeTagRouteImport.update({
+  id: '/age/$tag',
+  path: '/age/$tag',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductHandleRoute = ProductHandleRouteImport.update({
   id: '/product/$handle',
   path: '/product/$handle',
@@ -50,51 +62,75 @@ const ProductHandleRoute = ProductHandleRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/faq': typeof FaqRoute
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
+  '/age/$tag': typeof AgeTagRoute
   '/product/$handle': typeof ProductHandleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/faq': typeof FaqRoute
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
+  '/age/$tag': typeof AgeTagRoute
   '/product/$handle': typeof ProductHandleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/faq': typeof FaqRoute
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
+  '/age/$tag': typeof AgeTagRoute
   '/product/$handle': typeof ProductHandleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/about' | '/reading-room' | '/schools' | '/shop' | '/product/$handle'
+    | '/'
+    | '/about'
+    | '/faq'
+    | '/reading-room'
+    | '/schools'
+    | '/shop'
+    | '/age/$tag'
+    | '/product/$handle'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/about' | '/reading-room' | '/schools' | '/shop' | '/product/$handle'
+    | '/'
+    | '/about'
+    | '/faq'
+    | '/reading-room'
+    | '/schools'
+    | '/shop'
+    | '/age/$tag'
+    | '/product/$handle'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/faq'
     | '/reading-room'
     | '/schools'
     | '/shop'
+    | '/age/$tag'
     | '/product/$handle'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  FaqRoute: typeof FaqRoute
   ReadingRoomRoute: typeof ReadingRoomRoute
   SchoolsRoute: typeof SchoolsRoute
   ShopRoute: typeof ShopRoute
+  AgeTagRoute: typeof AgeTagRoute
   ProductHandleRoute: typeof ProductHandleRoute
 }
 
@@ -112,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reading-room': {
@@ -135,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/age/$tag': {
+      id: '/age/$tag'
+      path: '/age/$tag'
+      fullPath: '/age/$tag'
+      preLoaderRoute: typeof AgeTagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$handle': {
       id: '/product/$handle'
       path: '/product/$handle'
@@ -148,9 +198,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  FaqRoute: FaqRoute,
   ReadingRoomRoute: ReadingRoomRoute,
   SchoolsRoute: SchoolsRoute,
   ShopRoute: ShopRoute,
+  AgeTagRoute: AgeTagRoute,
   ProductHandleRoute: ProductHandleRoute,
 }
 export const routeTree = rootRouteImport
