@@ -167,14 +167,15 @@ function Home() {
           {AGE_GROUPS.map((age) => (
             <Link
               key={age.tag}
-              to="/shop"
-              search={{ age: age.tag }}
-              className="group rounded-xl border border-border bg-card p-5 shadow-shelf transition-shadow hover:shadow-lift"
+              to="/age/$tag"
+              params={{ tag: age.tag }}
+              className="group relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-shelf transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lift"
             >
-              <BookOpen className="h-5 w-5 text-primary" />
-              <h3 className="mt-4 text-base font-bold">{age.label}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{age.note}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-accent transition-transform duration-500 group-hover:scale-125" />
+              <BookOpen className="relative h-5 w-5 text-primary" />
+              <h3 className="relative mt-4 text-base font-bold">{age.label}</h3>
+              <p className="relative mt-1 text-xs text-muted-foreground">{age.note}</p>
+              <span className="relative mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary">
                 Browse <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </span>
             </Link>
@@ -277,19 +278,38 @@ function Home() {
               {
                 title: "Age-fit, every time",
                 body: "Each title carries a clear age band checked by educators, so the book you order actually matches the child you have.",
+                image: ARTICLES[1]!.image,
+                alt: "A young child reading beside a stack of picture books",
               },
               {
                 title: "Built for India",
                 body: "₹ pricing inclusive of taxes, COD and UPI at checkout, GST invoicing for schools, and pincode-accurate delivery dates.",
+                image: ARTICLES[2]!.image,
+                alt: "Two children reading bilingual Hindi and English books",
               },
               {
                 title: "Bundles that make gifting easy",
                 body: "Curated sets ship in a kraft gift box with a hand-written note — free, and up to 25% off the single-book price.",
+                image: ARTICLES[3]!.image,
+                alt: "A kraft gift box of books with a hand-written note",
               },
             ].map((c) => (
-              <div key={c.title} className="rounded-xl border border-border bg-card p-6 shadow-shelf">
-                <h3 className="text-base font-bold">{c.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.body}</p>
+              <div
+                key={c.title}
+                className="group overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+              >
+                <img
+                  src={c.image}
+                  alt={c.alt}
+                  loading="lazy"
+                  width={800}
+                  height={600}
+                  className="aspect-4/3 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="p-6">
+                  <h3 className="text-base font-bold">{c.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.body}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -301,12 +321,15 @@ function Home() {
 
       {/* Reading Room */}
       <section className="mx-auto max-w-7xl px-4 py-16">
-        <div className="flex items-end justify-between gap-4">
-          <div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:justify-between">
+          <div className="min-w-0">
             <p className="eyebrow">Reading Room</p>
             <h2 className="mt-2 text-3xl font-bold">Guides for curious parents</h2>
           </div>
-          <Link to="/reading-room" className="hidden items-center gap-1 text-sm font-semibold text-primary sm:flex">
+          <Link
+            to="/reading-room"
+            className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-primary sm:flex"
+          >
             All articles <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -315,13 +338,29 @@ function Home() {
             <Link
               key={a.title}
               to="/reading-room"
-              className="group overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-shadow hover:shadow-lift"
+              className="group overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
             >
-              <span className={`block h-28 ${a.tone}`} />
+              <span className="relative block overflow-hidden">
+                <img
+                  src={a.image}
+                  alt={a.title}
+                  loading="lazy"
+                  width={800}
+                  height={600}
+                  className="aspect-16/9 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <span className="absolute top-3 left-3 rounded-full bg-surface/95 px-2.5 py-1 text-[10px] font-bold text-primary">
+                  {a.tag}
+                </span>
+              </span>
               <span className="block p-5">
-                <span className="eyebrow">{a.tag}</span>
-                <span className="mt-2 block text-sm font-bold group-hover:text-primary">{a.title}</span>
-                <span className="mt-2 block text-xs text-muted-foreground">{a.minutes} min read</span>
+                <span className="block text-sm font-bold group-hover:text-primary">{a.title}</span>
+                <span className="mt-2 block line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                  {a.excerpt}
+                </span>
+                <span className="mt-3 block text-xs font-semibold text-primary">
+                  {a.minutes} min read →
+                </span>
               </span>
             </Link>
           ))}

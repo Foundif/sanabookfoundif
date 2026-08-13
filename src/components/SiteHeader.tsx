@@ -10,10 +10,11 @@ import { CATEGORIES } from "@/lib/shopify";
 
 const NAV = [
   { label: "Shop", to: "/shop" },
-  { label: "By Age", to: "/shop", search: { age: "age-3-5" } },
+  { label: "By Age", to: "/age/$tag", params: { tag: "age-3-5" } },
   { label: "Bundles", to: "/shop", search: { category: "Bundles" } },
   { label: "Reading Room", to: "/reading-room" },
   { label: "Schools", to: "/schools" },
+  { label: "Help", to: "/faq" },
   { label: "About", to: "/about" },
 ];
 
@@ -53,7 +54,7 @@ export function SiteHeader() {
                   <Link
                     key={item.label}
                     to={item.to}
-                    search={item.search as never}
+                    search={item.search as never} params={(item as { params?: Record<string,string> }).params as never}
                     className="rounded-md px-3 py-2 text-sm font-semibold hover:bg-secondary"
                   >
                     {item.label}
@@ -88,7 +89,7 @@ export function SiteHeader() {
               <Link
                 key={item.label}
                 to={item.to}
-                search={item.search as never}
+                search={item.search as never} params={(item as { params?: Record<string,string> }).params as never}
                 className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
               >
                 {item.label}

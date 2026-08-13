@@ -1,11 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { BookOpen, Gift, Loader2, RotateCcw, ShoppingCart, Truck } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Gift,
+  Loader2,
+  RotateCcw,
+  ShoppingCart,
+  Truck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductRail } from "@/components/ProductRail";
+import { FrequentlyBoughtTogether } from "@/components/FrequentlyBoughtTogether";
 import { ProductReviews, Stars } from "@/components/ProductReviews";
 import { ShippingEstimator } from "@/components/ShippingEstimator";
 import { fetchProductByHandle, fetchProducts, formatINR, productRating } from "@/lib/shopify";
@@ -136,30 +146,61 @@ function ProductDetail() {
       </nav>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
-        {/* Gallery */}
-        <div>
-          <div className="overflow-hidden rounded-xl border border-border bg-secondary">
+        {/* Gallery slider */}
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <div className="group relative overflow-hidden rounded-2xl border border-border bg-secondary shadow-shelf">
             {images[activeImage] ? (
               <img
                 src={images[activeImage].node.url}
                 alt={images[activeImage].node.altText ?? node.title}
-                className="aspect-4/5 w-full object-cover"
+                className="aspect-4/5 w-full object-cover transition-transform duration-700 hover:scale-105"
               />
             ) : (
               <div className="flex aspect-4/5 items-center justify-center text-sm text-muted-foreground">
                 No cover available
               </div>
             )}
+
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={() =>
+                    setActiveImage((i) => (i - 1 + images.length) % images.length)
+                  }
+                  aria-label="Previous image"
+                  className="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-primary shadow-shelf transition-opacity hover:bg-surface"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setActiveImage((i) => (i + 1) % images.length)}
+                  aria-label="Next image"
+                  className="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-primary shadow-shelf transition-opacity hover:bg-surface"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                  {images.map((img, i) => (
+                    <span
+                      key={`dot-${img.node.url}`}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === activeImage ? "w-5 bg-primary" : "w-1.5 bg-surface/80"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           {images.length > 1 && (
-            <div className="mt-3 flex gap-3">
+            <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {images.map((img, i) => (
                 <button
                   key={img.node.url}
                   onClick={() => setActiveImage(i)}
                   aria-label={`View image ${i + 1}`}
-                  className={`h-20 w-16 overflow-hidden rounded-md border-2 ${
-                    i === activeImage ? "border-primary" : "border-border"
+                  className={`h-20 w-16 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+                    i === activeImage ? "border-primary" : "border-border hover:border-primary/50"
                   }`}
                 >
                   <img src={img.node.url} alt="" className="h-full w-full object-cover" />
@@ -298,21 +339,42 @@ function ProductDetail() {
         </div>
       </div>
 
+      <FrequentlyBoughtTogether product={product} companions={relatedItems} />
+
       <ProductReviews product={product} />
 
+      {/* You may also like */}
+      <div className="mt-16">
+        <ProductRail
+          products={relatedItems}
+          eyebrow="You may also like"
+          title="More from the same shelf"
+          action={
+            <Button variant="ghost" className="text-primary" asChild>
+              <Link to="/shop">See all</Link>
+            </Button>
+          }
+        />
+      </div>
 
-      {/* Related */}
-      {relatedItems.length > 0 && (
-        <section className="mt-16">
-          <p className="eyebrow">Frequently bought together</p>
-          <h2 className="mt-2 text-2xl font-bold">More from the shelf</h2>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {relatedItems.map((p) => (
-              <ProductCard key={p.node.id} product={p} />
-            ))}
+      {/* Sticky purchase bar */}
+      <div className="sticky bottom-0 z-30 -mx-4 mt-16 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-bold">{node.title}</p>
+            <p className="text-sm font-bold">{formatINR(price)}</p>
           </div>
-        </section>
-      )}
+          <Button className="shrink-0 rounded-full" onClick={add} disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <ShoppingCart className="mr-2 h-4 w-4" /> Add to cart
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

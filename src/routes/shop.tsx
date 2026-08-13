@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/ProductCard";
 import { AGE_GROUPS, CATEGORIES, fetchProducts } from "@/lib/shopify";
 
@@ -99,6 +100,111 @@ function Shop() {
   const toggle = (value: string, list: string[], setList: (v: string[]) => void) =>
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
+  const activeCount =
+    (search.age ? 1 : 0) + (search.category ? 1 : 0) + prices.length + languages.length;
+
+  const clearAll = () => {
+    setPrices([]);
+    setLanguages([]);
+    navigate({ search: {} });
+  };
+
+  const filterPanel = (
+    <div className="space-y-7">
+      <div>
+        <h2 className="eyebrow">Age</h2>
+        <div className="mt-3 space-y-1">
+          {AGE_GROUPS.map((a) => (
+            <button
+              key={a.tag}
+              onClick={() =>
+                navigate({
+                  search: (prev: ShopSearch) => ({
+                    ...prev,
+                    age: prev.age === a.tag ? undefined : a.tag,
+                  }),
+                })
+              }
+              className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                search.age === a.tag
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "hover:bg-secondary"
+              }`}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="eyebrow">Category</h2>
+        <div className="mt-3 space-y-1">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c}
+              onClick={() =>
+                navigate({
+                  search: (prev: ShopSearch) => ({
+                    ...prev,
+                    category: prev.category === c ? undefined : c,
+                  }),
+                })
+              }
+              className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                search.category === c
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "hover:bg-secondary"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="eyebrow">Language</h2>
+        <div className="mt-3 space-y-2">
+          {LANGUAGES.map((l) => (
+            <div key={l.tag} className="flex items-center gap-2">
+              <Checkbox
+                id={`lang-${l.tag}`}
+                checked={languages.includes(l.tag)}
+                onCheckedChange={() => toggle(l.tag, languages, setLanguages)}
+              />
+              <Label htmlFor={`lang-${l.tag}`} className="text-sm font-normal">
+                {l.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="eyebrow">Price</h2>
+        <div className="mt-3 space-y-2">
+          {PRICE_BANDS.map((b) => (
+            <div key={b.id} className="flex items-center gap-2">
+              <Checkbox
+                id={`price-${b.id}`}
+                checked={prices.includes(b.id)}
+                onCheckedChange={() => toggle(b.id, prices, setPrices)}
+              />
+              <Label htmlFor={`price-${b.id}`} className="text-sm font-normal">
+                {b.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Button variant="outline" className="w-full" onClick={clearAll}>
+        Clear all filters
+      </Button>
+    </div>
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <nav className="text-xs text-muted-foreground">
@@ -108,9 +214,9 @@ function Shop() {
         / <span className="text-foreground">Shop</span>
       </nav>
 
-      <header className="mt-4 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">
+      <header className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold sm:text-3xl">
             {search.category ?? (search.age ? "Books by age" : "The whole library")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -118,8 +224,8 @@ function Shop() {
             {search.q ? ` matching “${search.q}”` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+        <div className="flex shrink-0 items-center gap-2">
+          <SlidersHorizontal className="hidden h-4 w-4 text-muted-foreground sm:block" />
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
@@ -134,107 +240,60 @@ function Shop() {
         </div>
       </header>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
-        <aside className="space-y-7">
-          <div>
-            <h2 className="eyebrow">Age</h2>
-            <div className="mt-3 space-y-1">
-              {AGE_GROUPS.map((a) => (
-                <button
-                  key={a.tag}
-                  onClick={() =>
-                    navigate({
-                      search: (prev: ShopSearch) => ({
-                        ...prev,
-                        age: prev.age === a.tag ? undefined : a.tag,
-                      }),
-                    })
-                  }
-                  className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                    search.age === a.tag
-                      ? "bg-primary text-primary-foreground font-semibold"
-                      : "hover:bg-secondary"
-                  }`}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Active filter chips */}
+      {activeCount > 0 && (
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {search.age && (
+            <Chip
+              label={AGE_GROUPS.find((a) => a.tag === search.age)?.label ?? search.age}
+              onClear={() => navigate({ search: (p: ShopSearch) => ({ ...p, age: undefined }) })}
+            />
+          )}
+          {search.category && (
+            <Chip
+              label={search.category}
+              onClear={() => navigate({ search: (p: ShopSearch) => ({ ...p, category: undefined }) })}
+            />
+          )}
+          {languages.map((l) => (
+            <Chip
+              key={l}
+              label={LANGUAGES.find((x) => x.tag === l)?.label ?? l}
+              onClear={() => toggle(l, languages, setLanguages)}
+            />
+          ))}
+          {prices.map((p) => (
+            <Chip
+              key={p}
+              label={PRICE_BANDS.find((b) => b.id === p)?.label ?? p}
+              onClear={() => toggle(p, prices, setPrices)}
+            />
+          ))}
+          <button onClick={clearAll} className="text-xs font-semibold text-primary underline">
+            Clear all
+          </button>
+        </div>
+      )}
 
-          <div>
-            <h2 className="eyebrow">Category</h2>
-            <div className="mt-3 space-y-1">
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c}
-                  onClick={() =>
-                    navigate({
-                      search: (prev: ShopSearch) => ({
-                        ...prev,
-                        category: prev.category === c ? undefined : c,
-                      }),
-                    })
-                  }
-                  className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                    search.category === c
-                      ? "bg-primary text-primary-foreground font-semibold"
-                      : "hover:bg-secondary"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Mobile filter trigger */}
+      <div className="mt-6 lg:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="w-full rounded-full">
+              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              Filters{activeCount > 0 ? ` (${activeCount})` : ""}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[86vw] max-w-sm overflow-y-auto p-6">
+            <SheetTitle className="text-base">Filter books</SheetTitle>
+            <div className="mt-6">{filterPanel}</div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
-          <div>
-            <h2 className="eyebrow">Language</h2>
-            <div className="mt-3 space-y-2">
-              {LANGUAGES.map((l) => (
-                <div key={l.tag} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`lang-${l.tag}`}
-                    checked={languages.includes(l.tag)}
-                    onCheckedChange={() => toggle(l.tag, languages, setLanguages)}
-                  />
-                  <Label htmlFor={`lang-${l.tag}`} className="text-sm font-normal">
-                    {l.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="eyebrow">Price</h2>
-            <div className="mt-3 space-y-2">
-              {PRICE_BANDS.map((b) => (
-                <div key={b.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`price-${b.id}`}
-                    checked={prices.includes(b.id)}
-                    onCheckedChange={() => toggle(b.id, prices, setPrices)}
-                  />
-                  <Label htmlFor={`price-${b.id}`} className="text-sm font-normal">
-                    {b.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              setPrices([]);
-              setLanguages([]);
-              navigate({ search: {} });
-            }}
-          >
-            Clear all filters
-          </Button>
+      <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-[240px_1fr] lg:items-start">
+        <aside className="hidden lg:sticky lg:top-28 lg:block lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:pb-4">
+          {filterPanel}
         </aside>
 
         <div>
@@ -245,9 +304,15 @@ function Shop() {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <p className="rounded-xl border border-border bg-card p-12 text-center text-sm text-muted-foreground">
-              No products found.
-            </p>
+            <div className="rounded-xl border border-border bg-card p-12 text-center">
+              <p className="text-sm font-semibold">No products found.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try clearing a filter or browsing the whole library.
+              </p>
+              <Button variant="outline" className="mt-5 rounded-full" onClick={clearAll}>
+                Clear all filters
+              </Button>
+            </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((p) => (
@@ -258,5 +323,16 @@ function Shop() {
         </div>
       </div>
     </div>
+  );
+}
+
+function Chip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <button
+      onClick={onClear}
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold hover:border-primary hover:text-primary"
+    >
+      {label} <X className="h-3 w-3" />
+    </button>
   );
 }
