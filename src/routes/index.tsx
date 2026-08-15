@@ -187,38 +187,23 @@ function Home() {
       {/* Bestsellers */}
       <section className="bg-surface py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow">Bestsellers</p>
-              <h2 className="mt-2 text-3xl font-bold">What Indian families are reading</h2>
-            </div>
-            <Link
-              to="/shop"
-              className="hidden items-center gap-1 text-sm font-semibold text-primary sm:flex"
-            >
-              View all <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {isLoading ? (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-96 rounded-xl" />
-              ))}
-            </div>
-          ) : shelf.length === 0 ? (
-            <p className="mt-8 rounded-xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">
-              No products found.
-            </p>
-          ) : (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {shelf.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
-              ))}
-            </div>
-          )}
+          <ProductRail
+            products={shelf}
+            isLoading={isLoading}
+            eyebrow="Bestsellers"
+            title="What Indian families are reading"
+            action={
+              <Link
+                to="/shop"
+                className="mr-1 hidden items-center gap-1 text-sm font-semibold text-primary sm:flex"
+              >
+                View all <ArrowRight className="h-4 w-4" />
+              </Link>
+            }
+          />
         </div>
       </section>
+
 
       {/* Bundles */}
       {bundles.length > 0 && (
