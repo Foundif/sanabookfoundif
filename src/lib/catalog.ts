@@ -20,7 +20,7 @@ function matchesQuery(product: ShopifyProduct, query: string) {
       const text = `${node.title} ${node.description} ${node.tags.join(" ")}`.toLowerCase();
       return text.includes(part.toLowerCase());
     }
-    switch (rawKey.toLowerCase()) {
+    switch ((rawKey ?? "").toLowerCase()) {
       case "tag":
         return node.tags.some((t) => t.toLowerCase() === value);
       case "product_type":
