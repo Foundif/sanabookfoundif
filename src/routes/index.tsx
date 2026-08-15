@@ -5,7 +5,7 @@ import heroImage from "@/assets/hero-reading.jpg";
 import { Button } from "@/components/ui/button";
 import { PromoCarousel } from "@/components/PromoCarousel";
 import { FeaturedCollections } from "@/components/FeaturedCollections";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductRail } from "@/components/ProductRail";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AGE_GROUPS, formatINR } from "@/lib/shopify";
 import { fetchProducts } from "@/lib/catalog";
