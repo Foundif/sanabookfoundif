@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchProducts } from "@/lib/shopify";
+import { fetchProducts } from "@/lib/catalog";
 import { FEATURED_COLLECTIONS, type FeaturedCollection } from "@/lib/promotions";
 
 function CollectionRow({ collection }: { collection: FeaturedCollection }) {

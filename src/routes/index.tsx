@@ -7,7 +7,8 @@ import { PromoCarousel } from "@/components/PromoCarousel";
 import { FeaturedCollections } from "@/components/FeaturedCollections";
 import { ProductCard } from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AGE_GROUPS, fetchProducts, formatINR } from "@/lib/shopify";
+import { AGE_GROUPS, formatINR } from "@/lib/shopify";
+import { fetchProducts } from "@/lib/catalog";
 import { ARTICLES } from "@/lib/articles";
 
 export const Route = createFileRoute("/")({

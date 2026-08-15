@@ -65,10 +65,10 @@ export function ProductRail({
       >
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-96 w-[260px] shrink-0 rounded-xl" />
+              <Skeleton key={i} className="h-96 w-[calc(50%-10px)] shrink-0 rounded-xl sm:w-[260px]" />
             ))
           : products.map((p) => (
-              <div key={p.node.id} className="w-[240px] shrink-0 snap-start sm:w-[260px]">
+              <div key={p.node.id} className="w-[calc(50%-10px)] shrink-0 snap-start sm:w-[260px]">
                 <ProductCard product={p} />
               </div>
             ))}

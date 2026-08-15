@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/ProductCard";
-import { AGE_GROUPS, CATEGORIES, fetchProducts } from "@/lib/shopify";
+import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
+import { fetchProducts } from "@/lib/catalog";
 
 type ShopSearch = { age?: string | undefined; category?: string | undefined; q?: string | undefined };
 
