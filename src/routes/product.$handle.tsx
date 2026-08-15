@@ -18,7 +18,8 @@ import { ProductRail } from "@/components/ProductRail";
 import { FrequentlyBoughtTogether } from "@/components/FrequentlyBoughtTogether";
 import { ProductReviews, Stars } from "@/components/ProductReviews";
 import { ShippingEstimator } from "@/components/ShippingEstimator";
-import { fetchProductByHandle, fetchProducts, formatINR, productRating } from "@/lib/shopify";
+import { formatINR, productRating } from "@/lib/shopify";
+import { fetchProductByHandle, fetchProducts } from "@/lib/catalog";
 import { useCartStore } from "@/stores/cartStore";
 
 

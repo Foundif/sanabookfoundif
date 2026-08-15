@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ProductRail } from "@/components/ProductRail";
 import { ProductCard } from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AGE_GROUPS, CATEGORIES, fetchProducts } from "@/lib/shopify";
+import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
+import { fetchProducts } from "@/lib/catalog";
 
 export const Route = createFileRoute("/age/$tag")({
   head: ({ params }) => {

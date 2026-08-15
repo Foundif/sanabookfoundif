@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { CartButton } from "@/components/CartDrawer";
 import { CATEGORIES } from "@/lib/shopify";
+import { useAuth } from "@/hooks/useAuth";
 
 const NAV = [
   { label: "Shop", to: "/shop" },
@@ -21,6 +22,8 @@ const NAV = [
 export function SiteHeader() {
   const [query, setQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -41,7 +44,7 @@ export function SiteHeader() {
         className={`border-b border-border bg-surface transition-shadow ${scrolled ? "shadow-shelf" : ""}`}
       >
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-          <Sheet>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
@@ -55,6 +58,7 @@ export function SiteHeader() {
                     key={item.label}
                     to={item.to}
                     search={item.search as never} params={(item as { params?: Record<string,string> }).params as never}
+                    onClick={() => setMenuOpen(false)}
                     className="rounded-md px-3 py-2 text-sm font-semibold hover:bg-secondary"
                   >
                     {item.label}
@@ -66,6 +70,7 @@ export function SiteHeader() {
                     key={c}
                     to="/shop"
                     search={{ category: c }}
+                    onClick={() => setMenuOpen(false)}
                     className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary"
                   >
                     {c}
@@ -119,8 +124,13 @@ export function SiteHeader() {
           </form>
 
           <div className="ml-auto flex items-center gap-1 md:ml-0">
-            <Button variant="ghost" size="icon" aria-label="Account" asChild>
-              <Link to="/about">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={user ? "Your account" : "Sign in"}
+              asChild
+            >
+              <Link to={user ? "/account" : "/auth"}>
                 <User className="h-5 w-5" />
               </Link>
             </Button>
