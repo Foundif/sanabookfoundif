@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ReadingRoomRouteImport } from './routes/reading-room'
 import { Route as SchoolsRouteImport } from './routes/schools'
@@ -44,6 +45,11 @@ const AuthRoute = AuthRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/checkout'
+    | '/contact'
     | '/faq'
     | '/reading-room'
     | '/schools'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/checkout'
+    | '/contact'
     | '/faq'
     | '/reading-room'
     | '/schools'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/checkout'
+    | '/contact'
     | '/faq'
     | '/reading-room'
     | '/schools'
@@ -165,6 +177,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
+  ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   ReadingRoomRoute: typeof ReadingRoomRoute
   SchoolsRoute: typeof SchoolsRoute
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -261,6 +281,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
+  ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   ReadingRoomRoute: ReadingRoomRoute,
   SchoolsRoute: SchoolsRoute,
