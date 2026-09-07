@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Menu, Search, ShoppingBag, User } from "lucide-react";
-import logo from "@/assets/sanabooks-logo.png.asset.json";
+import logo from "@/assets/sanabooks-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
