@@ -82,7 +82,7 @@ export function SiteHeader() {
 
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <img
-              src={logo.url}
+              src={logo}
               alt="Sanabooks India logo"
               className="h-9 w-9 rounded-full object-contain"
             />
