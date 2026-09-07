@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/sanabooks-logo.png.asset.json";
+import logo from "@/assets/sanabooks-logo.png";
 import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
 
 export function SiteFooter() {
