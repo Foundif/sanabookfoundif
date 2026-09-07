@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          full_name: string
+          id: string
+          is_default: boolean
+          label: string
+          phone: string
+          pincode: string
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          full_name: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          phone: string
+          pincode: string
+          state: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          phone?: string
+          pincode?: string
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -202,33 +247,60 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          child_age: number | null
+          child_interests: string[]
+          child_name: string | null
           city: string | null
           created_at: string
           display_name: string | null
           id: string
+          notify_digest: boolean
+          notify_launches: boolean
+          notify_orders: boolean
+          notify_picks: boolean
           phone: string | null
           pincode: string | null
+          preferred_payment: string | null
           state: string | null
+          upi_id: string | null
         }
         Insert: {
           address?: string | null
+          child_age?: number | null
+          child_interests?: string[]
+          child_name?: string | null
           city?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          notify_digest?: boolean
+          notify_launches?: boolean
+          notify_orders?: boolean
+          notify_picks?: boolean
           phone?: string | null
           pincode?: string | null
+          preferred_payment?: string | null
           state?: string | null
+          upi_id?: string | null
         }
         Update: {
           address?: string | null
+          child_age?: number | null
+          child_interests?: string[]
+          child_name?: string | null
           city?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          notify_digest?: boolean
+          notify_launches?: boolean
+          notify_orders?: boolean
+          notify_picks?: boolean
           phone?: string | null
           pincode?: string | null
+          preferred_payment?: string | null
           state?: string | null
+          upi_id?: string | null
         }
         Relationships: []
       }
@@ -249,6 +321,33 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          product_handle: string
+          product_title: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_handle: string
+          product_title?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_handle?: string
+          product_title?: string | null
           user_id?: string
         }
         Relationships: []
