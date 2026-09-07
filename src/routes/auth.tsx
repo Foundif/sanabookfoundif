@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assets/sanabooks-logo.png.asset.json";
+import logo from "@/assets/sanabooks-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -106,7 +106,7 @@ function AuthPage() {
 
         <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-7 shadow-lift">
           <div className="flex items-center gap-3">
-            <img src={logo.url} alt="" className="h-10 w-10 rounded-full object-contain" />
+            <img src={logo} alt="" className="h-10 w-10 rounded-full object-contain" />
             <div>
               <p className="text-base font-bold">
                 {mode === "signin" ? "Sign in" : "Create your account"}
