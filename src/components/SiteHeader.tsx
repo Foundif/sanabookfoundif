@@ -134,8 +134,19 @@ export function SiteHeader() {
                 <User className="h-5 w-5" />
               </Link>
             </Button>
+            <Button variant="ghost" size="icon" aria-label="Your wishlist" asChild>
+              <Link to={user ? "/account" : "/auth"} search={user ? { tab: "wishlist" } : {}} className="relative">
+                <Heart className="h-5 w-5" />
+                {wishlist.count > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-saffron px-1 text-[10px] font-bold text-saffron-foreground">
+                    {wishlist.count}
+                  </span>
+                )}
+              </Link>
+            </Button>
             <CartButton />
           </div>
+
         </div>
 
         <div className="hidden border-t border-border lg:block">
