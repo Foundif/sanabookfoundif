@@ -299,9 +299,9 @@ function Shop() {
 
         <div>
           {isLoading ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-96 rounded-xl" />
+                <Skeleton key={i} className="h-80 rounded-xl sm:h-96" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
@@ -315,7 +315,7 @@ function Shop() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
               {filtered.map((p) => (
                 <ProductCard key={p.node.id} product={p} />
               ))}

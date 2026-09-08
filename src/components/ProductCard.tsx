@@ -108,59 +108,68 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
         </span>
       </Link>
 
-      <div className="flex flex-1 flex-col p-3">
-        <div className="flex items-center justify-between gap-2">
-          <p className="eyebrow truncate">{node.productType || "Books"}</p>
-          {rating && (
-            <span className="flex shrink-0 items-center gap-1">
-              <Stars value={rating.average} />
-              <span className="text-[10px] font-semibold text-muted-foreground">
-                {rating.average.toFixed(1)}
+      <div className="flex flex-1 flex-col p-2.5 sm:p-3">
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="eyebrow truncate">{node.productType || "Books"}</p>
+            {rating && (
+              <span className="flex shrink-0 items-center gap-1">
+                <Stars value={rating.average} />
+                <span className="text-[10px] font-semibold text-muted-foreground">
+                  {rating.average.toFixed(1)}
+                </span>
               </span>
-            </span>
-          )}
-        </div>
+            )}
+          </div>
 
-        <Link
-          to="/product/$handle"
-          params={{ handle: node.handle }}
-          className="mt-1 line-clamp-2 text-sm font-bold hover:text-primary"
-        >
-          {node.title}
-        </Link>
-        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-          {node.description}
-        </p>
-
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-base font-bold">{formatINR(price)}</span>
-          {discount > 0 && compareAt && (
-            <span className="text-xs text-muted-foreground line-through">
-              {formatINR(compareAt)}
-            </span>
-          )}
-        </div>
-
-        {freeShip && (
-          <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-leaf">
-            <Truck className="h-3 w-3" /> Free shipping
+          <Link
+            to="/product/$handle"
+            params={{ handle: node.handle }}
+            className="mt-1 line-clamp-2 text-sm font-bold hover:text-primary"
+          >
+            {node.title}
+          </Link>
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+            {node.description}
           </p>
-        )}
+        </div>
 
-        <Button
-          onClick={handleAddToCart}
-          disabled={isLoading || !variant}
-          className="mt-3 w-full rounded-full"
-          size="sm"
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <Plus className="mr-1 h-4 w-4" /> Add to cart
-            </>
-          )}
-        </Button>
+        {/* Price, shipping note and CTA are pinned to the bottom of every card so
+            the Add to cart button always lands at the same height and size,
+            no matter how long the title/description above it run. */}
+        <div className="mt-auto pt-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base font-bold">{formatINR(price)}</span>
+            {discount > 0 && compareAt && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatINR(compareAt)}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-1 flex h-4 items-center gap-1 text-[11px] font-semibold text-leaf">
+            {freeShip && (
+              <>
+                <Truck className="h-3 w-3" /> Free shipping
+              </>
+            )}
+          </p>
+
+          <Button
+            onClick={handleAddToCart}
+            disabled={isLoading || !variant}
+            className="mt-2 w-full rounded-full"
+            size="sm"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="mr-1 h-4 w-4" /> Add to cart
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </article>
   );
