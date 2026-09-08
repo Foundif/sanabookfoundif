@@ -349,9 +349,12 @@ function Shop() {
 
         <div>
           {isLoading ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={VIEWS.find((v) => v.id === view)!.cls}>
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-96 rounded-xl" />
+                <Skeleton
+                  key={i}
+                  className={view === "list" ? "h-40 rounded-xl" : "h-80 rounded-xl sm:h-96"}
+                />
               ))}
             </div>
           ) : filtered.length === 0 ? (

@@ -1,8 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BookOpen, GraduationCap, Gift, RotateCcw, ShieldCheck, Truck } from "lucide-react";
-import heroImage from "@/assets/hero-reading.jpg";
+import {
+  ArrowRight,
+  BookOpen,
+  GraduationCap,
+  Gift,
+  RotateCcw,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroCarousel } from "@/components/HeroCarousel";
+import { PremiumMarquee } from "@/components/PremiumMarquee";
 import { PromoCarousel } from "@/components/PromoCarousel";
 import { FeaturedCollections } from "@/components/FeaturedCollections";
 import { ProductRail } from "@/components/ProductRail";
@@ -35,13 +44,6 @@ const TRUST = [
   { icon: ShieldCheck, title: "Hand-picked, age-checked", note: "Reviewed by educators" },
   { icon: RotateCcw, title: "Easy 7-day returns", note: "No questions asked" },
   { icon: Gift, title: "Gift wrap available", note: "Add a hand-written note" },
-];
-
-const HERO_COVERS = [
-  { label: "Picture Books", title: "The Curious Cloud", tilt: "shelf-tilt-1", tone: "bg-primary" },
-  { label: "Picture Books", title: "Mira & the Monsoon", tilt: "shelf-tilt-2", tone: "bg-saffron" },
-  { label: "Chapter Books", title: "Little Cosmonaut", tilt: "shelf-tilt-3", tone: "bg-navy" },
-  { label: "Early Readers", title: "How the Banyan Grew", tilt: "shelf-tilt-2", tone: "bg-leaf" },
 ];
 
 function Home() {
@@ -97,32 +99,7 @@ function Home() {
             </dl>
           </div>
 
-          <div className="relative">
-            <img
-              src={heroImage}
-              alt="A mother and daughter reading a picture book together at home"
-              className="aspect-4/3 w-full rounded-2xl object-cover shadow-lift"
-              loading="eager"
-            />
-            <div className="pointer-events-none absolute -bottom-6 -left-4 hidden gap-3 sm:flex">
-              {HERO_COVERS.slice(0, 3).map((cover) => (
-                <div
-                  key={cover.title}
-                  className={`${cover.tilt} ${cover.tone} flex h-32 w-24 flex-col justify-between rounded-lg p-3 text-primary-foreground shadow-cover`}
-                >
-                  <span className="text-[9px] font-bold tracking-[0.14em] uppercase opacity-90">
-                    {cover.label}
-                  </span>
-                  <span className="text-xs font-bold leading-tight">{cover.title}</span>
-                </div>
-              ))}
-            </div>
-            <div className="absolute -top-4 -right-2 rounded-xl bg-surface px-4 py-3 shadow-lift">
-              <p className="text-xs font-bold">Hand-picked by educators</p>
-              <p className="text-[11px] text-muted-foreground">Every title age-checked</p>
-            </div>
-          </div>
-
+          <HeroCarousel />
         </div>
 
         {/* Trust strip */}
@@ -142,6 +119,8 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <PremiumMarquee />
 
       {/* Rotating promotions */}
       <div className="pt-12">
@@ -176,7 +155,8 @@ function Home() {
               <h3 className="relative mt-4 text-base font-bold">{age.label}</h3>
               <p className="relative mt-1 text-xs text-muted-foreground">{age.note}</p>
               <span className="relative mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                Browse <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                Browse{" "}
+                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </span>
             </Link>
           ))}
@@ -202,7 +182,6 @@ function Home() {
           />
         </div>
       </section>
-
 
       {/* Bundles */}
       {bundles.length > 0 && (

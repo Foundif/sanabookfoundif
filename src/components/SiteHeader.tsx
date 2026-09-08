@@ -11,6 +11,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 
 
+const NOTICES = [
+  "Free shipping over ₹499",
+  "Cash on delivery available",
+  "Up to 25% off bundles",
+  "GST invoicing on every order",
+];
+
 const NAV = [
   { label: "Shop", to: "/shop" },
   { label: "By Age", to: "/age/$tag", params: { tag: "age-3-5" } },
@@ -38,10 +45,26 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40">
-      <div className="bg-navy text-navy-foreground">
-        <p className="mx-auto max-w-7xl px-4 py-2 text-center text-xs font-medium tracking-wide">
-          Free shipping over ₹499 · Cash on delivery available · Up to 25% off bundles
-        </p>
+      <div className="group overflow-hidden bg-navy text-navy-foreground">
+        <div className="flex w-max animate-marquee items-center py-2 group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+          {[0, 1].map((dup) => (
+            <div
+              key={dup}
+              aria-hidden={dup === 1}
+              className="flex shrink-0 items-center gap-3 pr-3"
+            >
+              {NOTICES.map((notice, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-3 text-xs font-medium tracking-wide whitespace-nowrap"
+                >
+                  {notice}
+                  <span className="text-navy-foreground/40">•</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div
