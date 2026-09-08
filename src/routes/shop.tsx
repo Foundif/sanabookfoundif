@@ -365,11 +365,16 @@ function Shop() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={VIEWS.find((v) => v.id === view)!.cls}>
               {filtered.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
+                <ProductCard
+                  key={p.node.id}
+                  product={p}
+                  view={view === "list" ? "list" : "grid"}
+                />
               ))}
             </div>
+
           )}
         </div>
       </div>
