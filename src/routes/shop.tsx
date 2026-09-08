@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { LayoutGrid, List, Rows3, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { ProductCard } from "@/components/ProductCard";
 import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
 import { fetchProducts } from "@/lib/catalog";
+
 
 type ShopSearch = { age?: string | undefined; category?: string | undefined; q?: string | undefined };
 
