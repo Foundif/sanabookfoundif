@@ -51,12 +51,34 @@ const LANGUAGES = [
   { tag: "tamil", label: "Tamil" },
 ];
 
+const VIEWS = [
+  { id: "grid-2", label: "2 per row", icon: Rows3, cls: "grid gap-5 grid-cols-1 sm:grid-cols-2" },
+  {
+    id: "grid-3",
+    label: "3 per row",
+    icon: LayoutGrid,
+    cls: "grid gap-5 grid-cols-2 sm:grid-cols-2 xl:grid-cols-3",
+  },
+  {
+    id: "grid-4",
+    label: "4 per row",
+    icon: LayoutGrid,
+    cls: "grid gap-4 grid-cols-2 sm:grid-cols-3 xl:grid-cols-4",
+  },
+  { id: "list", label: "List view", icon: List, cls: "grid gap-4 grid-cols-1" },
+] as const;
+
+type ViewId = (typeof VIEWS)[number]["id"];
+
+
 function Shop() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [prices, setPrices] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [sort, setSort] = useState("featured");
+  const [view, setView] = useState<ViewId>("grid-3");
+
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products", "shop"],
