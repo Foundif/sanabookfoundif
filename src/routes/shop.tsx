@@ -248,7 +248,33 @@ function Shop() {
             {search.q ? ` matching “${search.q}”` : ""}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div
+            role="group"
+            aria-label="Change how books are shown"
+            className="flex items-center gap-1 rounded-full border border-border bg-card p-1"
+          >
+            {VIEWS.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setView(v.id)}
+                aria-pressed={view === v.id}
+                title={v.label}
+                aria-label={v.label}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
+                  view === v.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                <v.icon className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">
+                  {v.id === "list" ? "List" : v.id.replace("grid-", "")}
+                </span>
+              </button>
+            ))}
+          </div>
           <SlidersHorizontal className="hidden h-4 w-4 text-muted-foreground sm:block" />
           <select
             value={sort}
@@ -262,6 +288,7 @@ function Shop() {
             <option value="title">Title A–Z</option>
           </select>
         </div>
+
       </header>
 
       {/* Active filter chips */}
