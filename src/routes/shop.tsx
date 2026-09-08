@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { LayoutGrid, List, Rows3, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { ProductCard } from "@/components/ProductCard";
 import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
 import { fetchProducts } from "@/lib/catalog";
+
 
 type ShopSearch = { age?: string | undefined; category?: string | undefined; q?: string | undefined };
 
@@ -50,12 +51,34 @@ const LANGUAGES = [
   { tag: "tamil", label: "Tamil" },
 ];
 
+const VIEWS = [
+  { id: "grid-2", label: "2 per row", icon: Rows3, cls: "grid gap-5 grid-cols-1 sm:grid-cols-2" },
+  {
+    id: "grid-3",
+    label: "3 per row",
+    icon: LayoutGrid,
+    cls: "grid gap-5 grid-cols-2 sm:grid-cols-2 xl:grid-cols-3",
+  },
+  {
+    id: "grid-4",
+    label: "4 per row",
+    icon: LayoutGrid,
+    cls: "grid gap-4 grid-cols-2 sm:grid-cols-3 xl:grid-cols-4",
+  },
+  { id: "list", label: "List view", icon: List, cls: "grid gap-4 grid-cols-1" },
+] as const;
+
+type ViewId = (typeof VIEWS)[number]["id"];
+
+
 function Shop() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [prices, setPrices] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [sort, setSort] = useState("featured");
+  const [view, setView] = useState<ViewId>("grid-3");
+
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products", "shop"],
@@ -225,7 +248,33 @@ function Shop() {
             {search.q ? ` matching “${search.q}”` : ""}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div
+            role="group"
+            aria-label="Change how books are shown"
+            className="flex items-center gap-1 rounded-full border border-border bg-card p-1"
+          >
+            {VIEWS.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setView(v.id)}
+                aria-pressed={view === v.id}
+                title={v.label}
+                aria-label={v.label}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
+                  view === v.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                <v.icon className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">
+                  {v.id === "list" ? "List" : v.id.replace("grid-", "")}
+                </span>
+              </button>
+            ))}
+          </div>
           <SlidersHorizontal className="hidden h-4 w-4 text-muted-foreground sm:block" />
           <select
             value={sort}
@@ -239,6 +288,7 @@ function Shop() {
             <option value="title">Title A–Z</option>
           </select>
         </div>
+
       </header>
 
       {/* Active filter chips */}
@@ -315,11 +365,16 @@ function Shop() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={VIEWS.find((v) => v.id === view)!.cls}>
               {filtered.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
+                <ProductCard
+                  key={p.node.id}
+                  product={p}
+                  view={view === "list" ? "list" : "grid"}
+                />
               ))}
             </div>
+
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, Search, ShoppingBag, User } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
 import logo from "@/assets/sanabooks-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { CartButton } from "@/components/CartDrawer";
 import { CATEGORIES } from "@/lib/shopify";
 import { useAuth } from "@/hooks/useAuth";
+import { useWishlist } from "@/hooks/useWishlist";
+
 
 const NAV = [
   { label: "Shop", to: "/shop" },
@@ -24,6 +26,8 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
+  const wishlist = useWishlist();
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -134,8 +138,19 @@ export function SiteHeader() {
                 <User className="h-5 w-5" />
               </Link>
             </Button>
+            <Button variant="ghost" size="icon" aria-label="Your wishlist" asChild>
+              <Link to={user ? "/account" : "/auth"} search={user ? { tab: "wishlist" } : {}} className="relative">
+                <Heart className="h-5 w-5" />
+                {wishlist.count > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-saffron px-1 text-[10px] font-bold text-saffron-foreground">
+                    {wishlist.count}
+                  </span>
+                )}
+              </Link>
+            </Button>
             <CartButton />
           </div>
+
         </div>
 
         <div className="hidden border-t border-border lg:block">

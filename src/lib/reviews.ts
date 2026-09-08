@@ -76,7 +76,28 @@ export async function deleteReview(id: string) {
   if (error) throw error;
 }
 
+/** Average + count per product handle, for star ratings on cards. */
+export async function fetchRatingSummaries(): Promise<
+  Record<string, { average: number; count: number }>
+> {
+  const { data, error } = await supabase.from("product_reviews").select("product_handle, rating");
+  if (error) throw error;
+  const totals: Record<string, { sum: number; count: number }> = {};
+  for (const row of (data ?? []) as { product_handle: string; rating: number }[]) {
+    const bucket = totals[row.product_handle] ?? { sum: 0, count: 0 };
+    bucket.sum += row.rating;
+    bucket.count += 1;
+    totals[row.product_handle] = bucket;
+  }
+  const out: Record<string, { average: number; count: number }> = {};
+  for (const [handle, t] of Object.entries(totals)) {
+    out[handle] = { average: t.sum / t.count, count: t.count };
+  }
+  return out;
+}
+
 export function summarise(reviews: { rating: number }[]) {
+
   const count = reviews.length;
   const average = count ? reviews.reduce((s, r) => s + r.rating, 0) / count : 0;
   const buckets = [5, 4, 3, 2, 1].map((star) => ({
