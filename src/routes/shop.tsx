@@ -238,7 +238,7 @@ function Shop() {
         / <span className="text-foreground">Shop</span>
       </nav>
 
-      <header className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
+      <header className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold sm:text-3xl">
             {search.category ?? (search.age ? "Books by age" : "The whole library")}
@@ -248,7 +248,7 @@ function Shop() {
             {search.q ? ` matching “${search.q}”` : ""}
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 sm:justify-start">
           <div
             role="group"
             aria-label="Change how books are shown"
@@ -288,7 +288,6 @@ function Shop() {
             <option value="title">Title A–Z</option>
           </select>
         </div>
-
       </header>
 
       {/* Active filter chips */}

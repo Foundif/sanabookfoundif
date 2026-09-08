@@ -121,7 +121,7 @@ export function ProductReviews({ product }: { product: ShopifyProduct }) {
       id="reviews"
       className="mt-16 rounded-2xl border border-border bg-card p-6 shadow-shelf sm:p-8"
     >
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="eyebrow">Reviews &amp; ratings</p>
           <h2 className="mt-2 text-2xl font-bold">What parents say</h2>
@@ -129,13 +129,17 @@ export function ProductReviews({ product }: { product: ShopifyProduct }) {
         {user ? (
           <Button
             variant="outline"
-            className="shrink-0 rounded-full border-primary text-primary"
+            className="shrink-0 self-start rounded-full border-primary text-primary"
             onClick={() => setOpen(true)}
           >
             <MessageSquarePlus className="mr-2 h-4 w-4" /> {mine ? "Edit your review" : "Write a review"}
           </Button>
         ) : (
-          <Button variant="outline" className="shrink-0 rounded-full border-primary text-primary" asChild>
+          <Button
+            variant="outline"
+            className="shrink-0 self-start rounded-full border-primary text-primary"
+            asChild
+          >
             <Link to="/auth">
               <MessageSquarePlus className="mr-2 h-4 w-4" /> Sign in to review
             </Link>
