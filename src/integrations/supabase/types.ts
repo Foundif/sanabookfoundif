@@ -59,6 +59,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_blocks: {
+        Row: {
+          active: boolean
+          block_key: string
+          body: string | null
+          created_at: string
+          heading: string
+          id: string
+          image_url: string | null
+          link_label: string | null
+          link_url: string | null
+          page: string
+          sort_order: number
+          subheading: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          block_key: string
+          body?: string | null
+          created_at?: string
+          heading?: string
+          id?: string
+          image_url?: string | null
+          link_label?: string | null
+          link_url?: string | null
+          page?: string
+          sort_order?: number
+          subheading?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          block_key?: string
+          body?: string | null
+          created_at?: string
+          heading?: string
+          id?: string
+          image_url?: string | null
+          link_label?: string | null
+          link_url?: string | null
+          page?: string
+          sort_order?: number
+          subheading?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -241,6 +289,60 @@ export type Database = {
           title?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean
+          age_tag: string | null
+          badge: string | null
+          compare_at_price: number | null
+          created_at: string
+          description: string
+          handle: string
+          id: string
+          image_url: string | null
+          price: number
+          product_type: string
+          sort_order: number
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          age_tag?: string | null
+          badge?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string
+          handle: string
+          id?: string
+          image_url?: string | null
+          price?: number
+          product_type?: string
+          sort_order?: number
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          age_tag?: string | null
+          badge?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string
+          handle?: string
+          id?: string
+          image_url?: string | null
+          price?: number
+          product_type?: string
+          sort_order?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
