@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { ShopifyProduct } from "@/lib/shopify";
 
 /** Horizontally scrollable product slider with arrow controls. */
@@ -20,6 +21,7 @@ export function ProductRail({
   action?: React.ReactNode;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
+  useScrollReveal([isLoading, products.length], scroller);
 
   const nudge = (dir: 1 | -1) => {
     const el = scroller.current;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Check, Copy, Gift, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,9 @@ const OFFER_CODE = "WELCOME15";
 export function FloatingWidgets() {
   const [offerOpen, setOfferOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const isProductPage = useRouterState({
+    select: (s) => s.location.pathname.startsWith("/product/"),
+  });
 
   const copyCode = async () => {
     try {
@@ -112,13 +115,17 @@ export function FloatingWidgets() {
         </DialogContent>
       </Dialog>
 
-      {/* WhatsApp chat bubble */}
+      {/* WhatsApp chat bubble — lifted above the mobile bottom nav, and further
+          still on product pages where a sticky "Add to cart" bar also sits at
+          the bottom, so it never covers either. */}
       <a
         href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
-        className="fixed right-5 bottom-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lift transition-transform hover:scale-105"
+        className={`fixed right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lift transition-transform hover:scale-105 ${
+          isProductPage ? "bottom-44" : "bottom-28"
+        } lg:bottom-6`}
       >
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-[#25D366]/60 motion-reduce:animate-none" />
         <WhatsAppIcon className="h-7 w-7" />

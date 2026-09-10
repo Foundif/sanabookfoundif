@@ -359,7 +359,7 @@ function ProductDetail() {
       </div>
 
       {/* Sticky purchase bar */}
-      <div className="sticky bottom-0 z-30 -mx-4 mt-16 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="sticky bottom-24 z-30 -mx-4 mt-16 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <p className="truncate text-xs font-bold">{node.title}</p>

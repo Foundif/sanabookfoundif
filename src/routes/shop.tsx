@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/ProductCard";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
 import { fetchProducts } from "@/lib/catalog";
 
@@ -120,6 +121,8 @@ function Shop() {
     if (sort === "title") sorted.sort((a, b) => a.node.title.localeCompare(b.node.title));
     return sorted;
   }, [products, search.age, search.category, search.q, languages, prices, sort]);
+
+  const gridRef = useScrollReveal<HTMLDivElement>([filtered.length, view, isLoading]);
 
   const toggle = (value: string, list: string[], setList: (v: string[]) => void) =>
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -367,7 +370,7 @@ function Shop() {
               </Button>
             </div>
           ) : (
-            <div className={VIEWS.find((v) => v.id === view)!.cls}>
+            <div ref={gridRef} className={VIEWS.find((v) => v.id === view)!.cls}>
               {filtered.map((p) => (
                 <ProductCard
                   key={p.node.id}

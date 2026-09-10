@@ -14,9 +14,11 @@ import { ShippingEstimator } from "@/components/ShippingEstimator";
 import type { ShippingMethodId } from "@/lib/shipping";
 import { formatINR } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
+import { useCartUi } from "@/stores/cartUiStore";
 
 export const CartButton = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const isOpen = useCartUi((s) => s.isOpen);
+  const setIsOpen = useCartUi((s) => s.setOpen);
   const [shipping, setShipping] = useState<{ method: ShippingMethodId; total: number } | null>(
     null,
   );

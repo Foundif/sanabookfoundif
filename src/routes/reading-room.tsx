@@ -41,8 +41,16 @@ function ReadingRoom() {
             key={a.title}
             className="group overflow-hidden rounded-xl border border-border bg-card shadow-shelf transition-shadow hover:shadow-lift"
           >
-            <div className={`flex h-40 items-end p-5 ${a.tone}`}>
-              <span className="rounded-full bg-surface/90 px-3 py-1 text-[11px] font-bold text-foreground">
+            <div className="relative overflow-hidden">
+              <img
+                src={a.image}
+                alt={a.title}
+                loading="lazy"
+                width={800}
+                height={600}
+                className="aspect-16/9 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <span className="absolute top-3 left-3 rounded-full bg-surface/95 px-3 py-1 text-[11px] font-bold text-foreground">
                 {a.tag}
               </span>
             </div>
