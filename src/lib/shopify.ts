@@ -169,11 +169,17 @@ export const AGE_GROUPS = [
 ] as const;
 
 export const CATEGORIES = [
-  "Picture Books",
-  "Early Readers",
-  "Chapter Books",
-  "Activity Kits",
   "Bundles",
-  "Adult Reads",
-  "Hindi & Regional Library",
+  "English Learning",
+  "Phonics & Sight Words",
+  "Handwriting & Tracing",
+  "Maths & Numbers",
+  "Activity Books",
+  "Colouring Books",
+  "Word Search & Puzzles",
+  "Sudoku & Brain Games",
+  "Sticker & Fun Books",
+  "Encyclopedias",
+  "Hindi Library",
+  "Tamil Library",
 ] as const;

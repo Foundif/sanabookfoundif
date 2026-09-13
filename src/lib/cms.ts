@@ -13,7 +13,7 @@ export const emptyProduct: ProductInput = {
   handle: "",
   title: "",
   description: "",
-  product_type: "Picture Books",
+  product_type: "English Learning",
   tags: [],
   age_tag: "age-3-5",
   price: 0,

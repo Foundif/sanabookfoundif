@@ -90,7 +90,7 @@ const GROUPS = [
       },
       {
         q: "Do you stock Hindi and regional-language books?",
-        a: "Yes — our Hindi & Regional Library shelf grows every week, including bilingual editions for English-first homes.",
+        a: "Yes — our Hindi and Tamil library grows every week, including bilingual editions for English-first homes.",
       },
     ],
   },

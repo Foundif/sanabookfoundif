@@ -39,9 +39,13 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
       productType: row.product_type || "Books",
       tags,
       priceRange: { minVariantPrice: { amount: String(row.price), currencyCode: "INR" } },
-      compareAtPriceRange: row.compare_at_price
-        ? { minVariantPrice: { amount: String(row.compare_at_price), currencyCode: "INR" } }
-        : undefined,
+      ...(row.compare_at_price
+        ? {
+            compareAtPriceRange: {
+              minVariantPrice: { amount: String(row.compare_at_price), currencyCode: "INR" },
+            },
+          }
+        : {}),
       images: {
         edges: row.image_url ? [{ node: { url: row.image_url, altText: row.title } }] : [],
       },
