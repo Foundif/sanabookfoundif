@@ -16,7 +16,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "word-search-puzzles",
         "age-6-8",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -145,7 +146,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "word-search-puzzles",
         "age-6-8",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -412,7 +414,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "sticker-fun-books",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -619,7 +622,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "english-learning",
         "age-6-8",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -826,7 +830,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "english-learning",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -1093,7 +1098,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "hindi-library",
         "age-3-5",
-        "hindi"
+        "hindi",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -1231,7 +1237,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "maths-numbers",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -1576,7 +1583,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "phonics-sight-words",
         "age-3-5",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -1645,7 +1653,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "phonics-sight-words",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -2050,7 +2059,9 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "tamil-library",
         "age-6-8",
-        "tamil"
+        "tamil",
+        "bestseller",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -2446,7 +2457,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "tamil-library",
         "age-6-8",
-        "tamil"
+        "tamil",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -2515,7 +2527,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "tamil-library",
         "age-6-8",
-        "tamil"
+        "tamil",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -2833,7 +2846,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "tamil-library",
         "age-6-8",
-        "tamil"
+        "tamil",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -2971,7 +2985,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "tamil-library",
         "age-6-8",
-        "tamil"
+        "tamil",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -3220,7 +3235,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "tamil-library",
         "age-6-8",
-        "tamil"
+        "tamil",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -3409,7 +3425,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "handwriting-tracing",
         "age-3-5",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -3616,7 +3633,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "handwriting-tracing",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -3892,7 +3910,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "handwriting-tracing",
         "age-3-5",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -4030,7 +4049,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "colouring-books",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -4375,7 +4395,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "colouring-books",
         "age-3-5",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -4444,7 +4465,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "colouring-books",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -4858,7 +4880,9 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "activity-books",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -5272,7 +5296,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "activity-books",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -5341,7 +5366,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "activity-books",
         "age-3-5",
-        "english"
+        "english",
+        "new"
       ],
       "priceRange": {
         "minVariantPrice": {
@@ -5686,7 +5712,8 @@ export const CATALOG: ShopifyProduct[] = [
       "tags": [
         "activity-books",
         "age-3-5",
-        "english"
+        "english",
+        "bestseller"
       ],
       "priceRange": {
         "minVariantPrice": {
