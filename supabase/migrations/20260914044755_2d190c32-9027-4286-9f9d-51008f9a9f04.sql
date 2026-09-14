@@ -1,0 +1,4 @@
+REVOKE EXECUTE ON FUNCTION public.bump_coupon_usage() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.set_updated_at() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.validate_review() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon, authenticated;
