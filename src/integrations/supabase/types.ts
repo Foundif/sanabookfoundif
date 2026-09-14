@@ -143,6 +143,60 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string
+          discount_type: string
+          ends_at: string | null
+          free_shipping: boolean
+          id: string
+          max_discount: number | null
+          min_subtotal: number
+          starts_at: string | null
+          times_used: number
+          updated_at: string
+          usage_limit: number | null
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string
+          discount_type?: string
+          ends_at?: string | null
+          free_shipping?: boolean
+          id?: string
+          max_discount?: number | null
+          min_subtotal?: number
+          starts_at?: string | null
+          times_used?: number
+          updated_at?: string
+          usage_limit?: number | null
+          value?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string
+          discount_type?: string
+          ends_at?: string | null
+          free_shipping?: boolean
+          id?: string
+          max_discount?: number | null
+          min_subtotal?: number
+          starts_at?: string | null
+          times_used?: number
+          updated_at?: string
+          usage_limit?: number | null
+          value?: number
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -189,7 +243,9 @@ export type Database = {
           address: string
           city: string
           cod_fee: number
+          coupon_code: string | null
           created_at: string
+          discount: number
           email: string
           full_name: string
           id: string
@@ -211,7 +267,9 @@ export type Database = {
           address: string
           city: string
           cod_fee?: number
+          coupon_code?: string | null
           created_at?: string
+          discount?: number
           email: string
           full_name: string
           id?: string
@@ -233,7 +291,9 @@ export type Database = {
           address?: string
           city?: string
           cod_fee?: number
+          coupon_code?: string | null
           created_at?: string
+          discount?: number
           email?: string
           full_name?: string
           id?: string
@@ -303,9 +363,11 @@ export type Database = {
           handle: string
           id: string
           image_url: string | null
+          low_stock_threshold: number
           price: number
           product_type: string
           sort_order: number
+          stock: number
           tags: string[]
           title: string
           updated_at: string
@@ -320,9 +382,11 @@ export type Database = {
           handle: string
           id?: string
           image_url?: string | null
+          low_stock_threshold?: number
           price?: number
           product_type?: string
           sort_order?: number
+          stock?: number
           tags?: string[]
           title: string
           updated_at?: string
@@ -337,9 +401,11 @@ export type Database = {
           handle?: string
           id?: string
           image_url?: string | null
+          low_stock_threshold?: number
           price?: number
           product_type?: string
           sort_order?: number
+          stock?: number
           tags?: string[]
           title?: string
           updated_at?: string
@@ -459,6 +525,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_coupon: {
+        Args: { _code: string; _subtotal: number }
+        Returns: Json
+      }
       claim_admin_if_none: { Args: never; Returns: boolean }
       has_role: {
         Args: {
