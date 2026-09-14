@@ -212,3 +212,10 @@
 @utility animate-marquee {
   animation: marquee 22s linear infinite;
 }
+
+/* Bottom app nav only exists below lg; remove its reserved space above it. */
+@media (min-width: 1024px) {
+  :root {
+    --bottom-nav-h: 0px;
+  }
+}
