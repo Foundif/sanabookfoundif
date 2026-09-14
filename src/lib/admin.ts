@@ -108,8 +108,8 @@ export async function fetchStock(): Promise<StockRow[]> {
 }
 
 export async function updateStock(id: string, stock: number, lowStockThreshold?: number) {
-  const patch: Record<string, number> = { stock };
-  if (typeof lowStockThreshold === "number") patch["low_stock_threshold"] = lowStockThreshold;
+  const patch: { stock: number; low_stock_threshold?: number } = { stock };
+  if (typeof lowStockThreshold === "number") patch.low_stock_threshold = lowStockThreshold;
   const { error } = await supabase.from("products").update(patch).eq("id", id);
   if (error) throw error;
   invalidateProductCache();
