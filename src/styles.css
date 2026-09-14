@@ -67,6 +67,7 @@
 
 :root {
   --radius: 0.75rem;
+  --bottom-nav-h: 58px;
 
   --background: oklch(0.978 0.011 84);
   --foreground: oklch(0.29 0.055 251);
@@ -210,4 +211,11 @@
 
 @utility animate-marquee {
   animation: marquee 22s linear infinite;
+}
+
+/* Bottom app nav only exists below lg; remove its reserved space above it. */
+@media (min-width: 1024px) {
+  :root {
+    --bottom-nav-h: 0px;
+  }
 }

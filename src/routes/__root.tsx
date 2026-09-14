@@ -138,7 +138,7 @@ function AppShell() {
   useCartSync();
 
   return (
-    <div className="flex min-h-screen flex-col pb-24 lg:pb-0">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1">
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
