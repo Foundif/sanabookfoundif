@@ -67,6 +67,7 @@
 
 :root {
   --radius: 0.75rem;
+  --bottom-nav-h: 58px;
 
   --background: oklch(0.978 0.011 84);
   --foreground: oklch(0.29 0.055 251);
