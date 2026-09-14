@@ -4,7 +4,10 @@ import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-20 bg-navy text-navy-foreground">
+    <footer
+      className="mt-20 bg-navy text-navy-foreground lg:[padding-bottom:0]"
+      style={{ paddingBottom: "calc(var(--bottom-nav-h) + env(safe-area-inset-bottom))" }}
+    >
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
