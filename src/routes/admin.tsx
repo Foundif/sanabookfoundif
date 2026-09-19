@@ -33,7 +33,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-const LINKS = [
+const LINKS: {
+  to: "/admin" | "/admin/orders" | "/admin/customers" | "/admin/products" | "/admin/inventory" | "/admin/coupons" | "/admin/messages" | "/admin/content";
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+}[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
