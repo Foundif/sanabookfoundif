@@ -16,6 +16,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { BottomNav } from "@/components/BottomNav";
 import { FloatingWidgets } from "@/components/FloatingWidgets";
 import { Toaster } from "@/components/ui/sonner";
+import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { useCartSync } from "@/hooks/useCartSync";
 
 function NotFoundComponent() {
@@ -138,16 +139,18 @@ function AppShell() {
   useCartSync();
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="flex-1">
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </main>
-      <SiteFooter />
-      <BottomNav />
-      <FloatingWidgets />
-      <Toaster position="top-center" />
-    </div>
+    <MaintenanceGate>
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <SiteFooter />
+        <BottomNav />
+        <FloatingWidgets />
+        <Toaster position="top-center" />
+      </div>
+    </MaintenanceGate>
   );
 }
