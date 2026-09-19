@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Users,
+  Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const LINKS: {
-  to: "/admin" | "/admin/orders" | "/admin/customers" | "/admin/products" | "/admin/inventory" | "/admin/coupons" | "/admin/messages" | "/admin/content";
+  to: "/admin" | "/admin/orders" | "/admin/customers" | "/admin/products" | "/admin/inventory" | "/admin/coupons" | "/admin/messages" | "/admin/content" | "/admin/settings";
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
@@ -47,6 +48,7 @@ const LINKS: {
   { to: "/admin/coupons", label: "Coupons", icon: BadgePercent },
   { to: "/admin/messages", label: "Inbox", icon: Inbox },
   { to: "/admin/content", label: "Page content", icon: FileText },
+  { to: "/admin/settings", label: "Settings", icon: Wrench },
 ] as const;
 
 function AdminLayout() {

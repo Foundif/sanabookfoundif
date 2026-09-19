@@ -27,6 +27,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AgeTagRouteImport } from './routes/age.$tag'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as AdminOrdersIndexRouteImport } from './routes/admin.orders.index'
@@ -122,6 +123,11 @@ const AdminProductsRoute = AdminProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AgeTagRoute = AgeTagRouteImport.update({
   id: '/age/$tag',
   path: '/age/$tag',
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/age/$tag': typeof AgeTagRoute
   '/product/$handle': typeof ProductHandleRoute
   '/admin/': typeof AdminIndexRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/age/$tag': typeof AgeTagRoute
   '/product/$handle': typeof ProductHandleRoute
   '/admin': typeof AdminIndexRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/age/$tag': typeof AgeTagRoute
   '/product/$handle': typeof ProductHandleRoute
   '/admin/': typeof AdminIndexRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/admin/inventory'
     | '/admin/messages'
     | '/admin/products'
+    | '/admin/settings'
     | '/age/$tag'
     | '/product/$handle'
     | '/admin/'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/admin/inventory'
     | '/admin/messages'
     | '/admin/products'
+    | '/admin/settings'
     | '/age/$tag'
     | '/product/$handle'
     | '/admin'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/admin/inventory'
     | '/admin/messages'
     | '/admin/products'
+    | '/admin/settings'
     | '/age/$tag'
     | '/product/$handle'
     | '/admin/'
@@ -433,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/age/$tag': {
       id: '/age/$tag'
       path: '/age/$tag'
@@ -471,6 +490,7 @@ interface AdminRouteChildren {
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminProductsRoute: typeof AdminProductsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminOrdersIdRoute: typeof AdminOrdersIdRoute
   AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute
@@ -483,6 +503,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminInventoryRoute: AdminInventoryRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminProductsRoute: AdminProductsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminOrdersIdRoute: AdminOrdersIdRoute,
   AdminOrdersIndexRoute: AdminOrdersIndexRoute,

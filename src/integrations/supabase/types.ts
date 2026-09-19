@@ -472,6 +472,42 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          id: string
+          maintenance_enabled: boolean
+          maintenance_ends_at: string | null
+          maintenance_heading: string
+          maintenance_message: string
+          show_countdown: boolean
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          maintenance_enabled?: boolean
+          maintenance_ends_at?: string | null
+          maintenance_heading?: string
+          maintenance_message?: string
+          show_countdown?: boolean
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          maintenance_enabled?: boolean
+          maintenance_ends_at?: string | null
+          maintenance_heading?: string
+          maintenance_message?: string
+          show_countdown?: boolean
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
