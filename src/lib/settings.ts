@@ -1,0 +1,48 @@
+/** Store-wide settings: maintenance mode with an optional "back online" timer. */
+import { supabase } from "@/integrations/supabase/client";
+
+export interface SiteSettings {
+  id: string;
+  maintenance_enabled: boolean;
+  maintenance_heading: string;
+  maintenance_message: string;
+  maintenance_ends_at: string | null;
+  show_countdown: boolean;
+}
+
+export async function fetchSiteSettings(): Promise<SiteSettings | null> {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select(
+      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown",
+    )
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return (data ?? null) as unknown as SiteSettings | null;
+}
+
+export async function saveSiteSettings(id: string, patch: Partial<Omit<SiteSettings, "id">>) {
+  const { error } = await supabase.from("site_settings").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+/** True while maintenance is on and the scheduled end time (if any) has not passed. */
+export function maintenanceActive(s: SiteSettings | null | undefined, now = Date.now()) {
+  if (!s?.maintenance_enabled) return false;
+  if (s.maintenance_ends_at && new Date(s.maintenance_ends_at).getTime() <= now) return false;
+  return true;
+}
+
+export function countdownParts(endsAt: string | null, now = Date.now()) {
+  if (!endsAt) return null;
+  const ms = new Date(endsAt).getTime() - now;
+  if (ms <= 0) return null;
+  const total = Math.floor(ms / 1000);
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  };
+}
