@@ -62,8 +62,11 @@ export async function createOrder(input: {
   subtotal: number;
   shippingFee: number;
   codFee: number;
+  discount?: number;
+  couponCode?: string | null;
   total: number;
   notes?: string | null;
+  paymentStatus?: string;
   items: OrderItemInput[];
 }): Promise<string> {
   const order_number = newOrderNumber();
@@ -84,7 +87,10 @@ export async function createOrder(input: {
       subtotal: input.subtotal,
       shipping_fee: input.shippingFee,
       cod_fee: input.codFee,
+      discount: input.discount ?? 0,
+      coupon_code: input.couponCode ?? null,
       total: input.total,
+      payment_status: input.paymentStatus ?? "pending",
       notes: input.notes ?? null,
     })
     .select("id, order_number")
@@ -99,7 +105,32 @@ export async function createOrder(input: {
     );
     if (itemError) throw itemError;
   }
+
+  // Keep shop stock in step with what was just sold.
+  await supabase.rpc("apply_order_stock", {
+    _items: input.items.map((i) => ({ handle: i.product_handle, qty: i.quantity })),
+  });
+
   return order_number;
+}
+
+export interface CouponResult {
+  ok: boolean;
+  reason?: string;
+  code?: string;
+  discount?: number;
+  free_shipping?: boolean;
+  description?: string | null;
+}
+
+/** Validates a discount code against the current basket subtotal. */
+export async function validateCoupon(code: string, subtotal: number): Promise<CouponResult> {
+  const { data, error } = await supabase.rpc("check_coupon", {
+    _code: code.trim(),
+    _subtotal: subtotal,
+  });
+  if (error) return { ok: false, reason: "Could not check that code right now." };
+  return (data ?? { ok: false, reason: "This code is not valid." }) as unknown as CouponResult;
 }
 
 export async function fetchMyOrders(): Promise<(OrderRow & { items: OrderItemRow[] })[]> {
