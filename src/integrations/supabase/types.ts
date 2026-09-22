@@ -570,6 +570,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_order_stock: { Args: { _items: Json }; Returns: undefined }
       check_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: Json
