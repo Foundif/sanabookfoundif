@@ -42,11 +42,8 @@ export const CartButton = () => {
   }, [isOpen, syncCart]);
 
   const handleCheckout = () => {
-    const checkoutUrl = getCheckoutUrl();
-    if (checkoutUrl) {
-      window.open(checkoutUrl, "_blank");
-      setIsOpen(false);
-    }
+    setIsOpen(false);
+    navigate({ to: "/checkout" });
   };
 
   return (

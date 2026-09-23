@@ -92,7 +92,7 @@ export function ShippingEstimator({ subtotal, compact = false, onSelect }: Props
                   checked={selected.id === o.id}
                   onChange={() => {
                     setMethod(o.id);
-                    onSelect?.(o.id, subtotal + o.price);
+                    onSelect?.(o.id, subtotal + o.price, checked);
                   }}
                 />
                 <span className="min-w-0 flex-1">
