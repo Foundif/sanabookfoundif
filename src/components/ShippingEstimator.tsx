@@ -16,7 +16,7 @@ interface Props {
   subtotal: number;
   /** Compact variant is used inside the cart drawer. */
   compact?: boolean;
-  onSelect?: (method: ShippingMethodId, total: number) => void;
+  onSelect?: (method: ShippingMethodId, total: number, pincode?: string) => void;
 }
 
 export function ShippingEstimator({ subtotal, compact = false, onSelect }: Props) {
@@ -33,7 +33,7 @@ export function ShippingEstimator({ subtotal, compact = false, onSelect }: Props
     setChecked(pincode);
     setMethod("standard");
     const opts = shippingOptions(pincode, subtotal);
-    if (opts[0]) onSelect?.(opts[0].id, subtotal + opts[0].price);
+    if (opts[0]) onSelect?.(opts[0].id, subtotal + opts[0].price, pincode);
   };
 
   return (
@@ -92,7 +92,7 @@ export function ShippingEstimator({ subtotal, compact = false, onSelect }: Props
                   checked={selected.id === o.id}
                   onChange={() => {
                     setMethod(o.id);
-                    onSelect?.(o.id, subtotal + o.price);
+                    onSelect?.(o.id, subtotal + o.price, checked);
                   }}
                 />
                 <span className="min-w-0 flex-1">

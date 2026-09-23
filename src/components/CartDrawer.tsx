@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ExternalLink, Loader2, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { ArrowRight, Loader2, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { useCartUi } from "@/stores/cartUiStore";
 
 export const CartButton = () => {
+  const navigate = useNavigate();
   const isOpen = useCartUi((s) => s.isOpen);
   const setIsOpen = useCartUi((s) => s.setOpen);
   const [shipping, setShipping] = useState<{ method: ShippingMethodId; total: number } | null>(
@@ -27,7 +29,6 @@ export const CartButton = () => {
   const isSyncing = useCartStore((s) => s.isSyncing);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
-  const getCheckoutUrl = useCartStore((s) => s.getCheckoutUrl);
   const syncCart = useCartStore((s) => s.syncCart);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -42,11 +43,8 @@ export const CartButton = () => {
   }, [isOpen, syncCart]);
 
   const handleCheckout = () => {
-    const checkoutUrl = getCheckoutUrl();
-    if (checkoutUrl) {
-      window.open(checkoutUrl, "_blank");
-      setIsOpen(false);
-    }
+    setIsOpen(false);
+    navigate({ to: "/checkout" });
   };
 
   return (
@@ -185,8 +183,8 @@ export const CartButton = () => {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <ExternalLink className="mr-2 h-4 w-4" />
                       Secure checkout
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
