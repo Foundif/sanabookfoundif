@@ -184,8 +184,8 @@ export const CartButton = () => {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <ExternalLink className="mr-2 h-4 w-4" />
                       Secure checkout
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
