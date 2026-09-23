@@ -246,34 +246,103 @@ function ProductDetail() {
           )}
 
 
-          {/* Age recommender */}
-          {ageRange && (
-            <div className="mt-7 rounded-xl border border-border bg-card p-4">
-              <p className="eyebrow">Right for your child?</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {Array.from({ length: 10 }, (_, i) => i + 1).map((year) => {
-                  const inRange =
-                    year >= parseInt(ageRange[0] ?? "0") && year <= parseInt(ageRange[1] ?? "0");
-                  return (
-                    <span
-                      key={year}
-                      className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ${
-                        inRange
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-muted-foreground"
-                      }`}
-                    >
-                      {year}y
-                    </span>
-                  );
-                })}
+          {/* Age recommender slider */}
+          {ageRange && (() => {
+            const from = parseInt(ageRange[0] ?? "0");
+            const to = parseInt(ageRange[1] ?? "0");
+            const fits = childAge >= from && childAge <= to;
+            return (
+              <div className="mt-7 rounded-2xl border border-border bg-card p-5 shadow-shelf">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="eyebrow">Right for your child?</p>
+                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-bold">
+                    {childAge}{childAge >= 12 ? "+" : ""} years
+                  </span>
+                </div>
+
+                <div className="relative mt-5">
+                  <div className="h-2 w-full rounded-full bg-secondary" />
+                  <div
+                    className="absolute top-0 h-2 rounded-full bg-primary/25"
+                    style={{
+                      left: `${((from - 1) / 11) * 100}%`,
+                      width: `${((to - from) / 11) * 100}%`,
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min={1}
+                    max={12}
+                    step={1}
+                    value={childAge}
+                    onChange={(e) => setChildAge(parseInt(e.target.value))}
+                    aria-label="Your child's age"
+                    className="absolute -top-2 h-6 w-full cursor-pointer appearance-none bg-transparent [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-surface [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-shelf"
+                  />
+                </div>
+                <div className="mt-3 flex justify-between text-[10px] font-semibold text-muted-foreground">
+                  <span>1y</span>
+                  <span>4y</span>
+                  <span>8y</span>
+                  <span>12y+</span>
+                </div>
+
+                <p
+                  className={`mt-4 flex items-center gap-1.5 text-xs font-bold ${
+                    fits ? "text-leaf" : "text-muted-foreground"
+                  }`}
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  {fits
+                    ? `Great match — best read with ${from}–${to} year olds`
+                    : `Recommended for ${from}–${to} year olds`}
+                </p>
+                {!fits && (
+                  <Button variant="link" className="mt-1 h-auto p-0 text-xs" asChild>
+                    <Link to="/shop">See books for {childAge} year olds</Link>
+                  </Button>
+                )}
               </div>
-              <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-leaf">
-                <BookOpen className="h-3.5 w-3.5" />
-                Best read with {ageRange[0]}–{ageRange[1]} year olds
-              </p>
+            );
+          })()}
+
+          {/* Language */}
+          <div className="mt-6">
+            <p className="eyebrow">Language</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLanguage(l)}
+                  className={`rounded-full border px-4 py-2 text-sm font-medium ${
+                    l === language
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input hover:bg-secondary"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
+
+          {/* Gift wrap */}
+          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-secondary/40 p-4">
+            <input
+              type="checkbox"
+              checked={giftWrap}
+              onChange={(e) => setGiftWrap(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-[hsl(var(--primary))]"
+            />
+            <span>
+              <span className="flex items-center gap-1.5 text-sm font-bold">
+                <Gift className="h-3.5 w-3.5 text-saffron" /> Add gift wrap — free
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Kraft gift box with ribbon and a hand-written note. Add the note in order comments.
+              </span>
+            </span>
+          </label>
 
           {/* Variant picker */}
           {node.variants.edges.length > 1 && (
