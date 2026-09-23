@@ -137,6 +137,20 @@ function RootComponent() {
 
 function AppShell() {
   useCartSync();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
+
+  // The admin dashboard is a standalone workspace — no storefront header, footer,
+  // bottom navigation or floating shopper widgets.
+  if (isAdminArea) {
+    return (
+      <>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <Toaster position="top-center" />
+      </>
+    );
+  }
 
   return (
     <MaintenanceGate>
