@@ -29,7 +29,6 @@ export const CartButton = () => {
   const isSyncing = useCartStore((s) => s.isSyncing);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
-  const getCheckoutUrl = useCartStore((s) => s.getCheckoutUrl);
   const syncCart = useCartStore((s) => s.syncCart);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
