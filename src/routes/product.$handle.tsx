@@ -54,6 +54,9 @@ function ProductDetail() {
   const getCheckoutUrl = useCartStore((s) => s.getCheckoutUrl);
   const [activeImage, setActiveImage] = useState(0);
   const [variantIndex, setVariantIndex] = useState(0);
+  const [childAge, setChildAge] = useState(4);
+  const [language, setLanguage] = useState<string>("English");
+  const [giftWrap, setGiftWrap] = useState(false);
 
   const { data: product, isLoading: loadingProduct } = useQuery({
     queryKey: ["product", handle],
