@@ -115,7 +115,7 @@ function AdminLayout() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", replace: true });
+    if (!loading && !user) navigate({ to: "/admin/login", replace: true });
   }, [loading, user, navigate]);
 
   if (loading || roleLoading || !user) {
