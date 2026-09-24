@@ -22,6 +22,8 @@ import { formatINR, productRating } from "@/lib/shopify";
 import { fetchProductByHandle, fetchProducts } from "@/lib/catalog";
 import { useCartStore } from "@/stores/cartStore";
 
+const LANGUAGES = ["English", "Hindi", "Bilingual"] as const;
+
 
 export const Route = createFileRoute("/product/$handle")({
   head: ({ params }) => {
