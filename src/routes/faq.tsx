@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { useState } from "react";
+import { Mail, MessageCircle, Phone, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -97,6 +99,12 @@ const GROUPS = [
 ];
 
 function Faq() {
+  const [q, setQ] = useState("");
+  const term = q.trim().toLowerCase();
+  const groups = GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => !term || (i.q + " " + i.a).toLowerCase().includes(term)),
+  })).filter((g) => g.items.length);
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <nav className="text-xs text-muted-foreground">
@@ -108,15 +116,29 @@ function Faq() {
 
       <header className="mt-4">
         <p className="eyebrow">Help centre</p>
-        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Everything parents ask us</h1>
+        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Questions, answered.</h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Shipping dates, COD, GST invoices, returns and gifting — answered plainly. If something is
           missing, write to us and a human replies within one working day.
         </p>
       </header>
 
+      <div className="relative mt-8">
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search delivery, COD, returns…"
+          className="h-12 rounded-full pl-11"
+          aria-label="Search questions"
+        />
+      </div>
+
       <div className="mt-10 space-y-10">
-        {GROUPS.map((group) => (
+        {groups.length === 0 && (
+          <p className="text-sm text-muted-foreground">No answers match “{q}”. Try another word or contact us below.</p>
+        )}
+        {groups.map((group) => (
           <section key={group.title}>
             <h2 className="text-lg font-bold">{group.title}</h2>
             <Accordion type="single" collapsible className="mt-3">

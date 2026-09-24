@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -22,20 +22,27 @@ import { useCartSync } from "@/hooks/useCartSync";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <div className="flex min-h-[70vh] items-center justify-center bg-background px-4 py-16">
+      <div className="max-w-lg text-center">
+        <div className="relative mx-auto h-40 w-56">
+          {["-rotate-12 -translate-x-10 bg-saffron", "rotate-0 bg-primary", "rotate-12 translate-x-10 bg-leaf"].map((c, i) => (
+            <div
+              key={i}
+              className={`absolute inset-x-12 top-0 h-36 rounded-lg shadow-shelf ${c}`}
+              style={{ zIndex: i === 1 ? 2 : 1 }}
+            />
+          ))}
+          <span className="absolute inset-x-0 top-10 z-10 text-5xl font-bold text-primary-foreground">404</span>
+        </div>
+        <p className="eyebrow mt-8">Lost between the shelves</p>
+        <h1 className="mt-2 text-3xl font-bold text-foreground">This page wandered off</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          The page you're looking for has moved or never existed. Let's find your little reader a good book instead.
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link to="/" className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">Go home</Link>
+          <Link to="/shop" className="inline-flex items-center rounded-full border border-input px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary">Browse books</Link>
+          <Link to="/faq" className="inline-flex items-center rounded-full border border-input px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary">Get help</Link>
         </div>
       </div>
     </div>
@@ -154,6 +161,14 @@ function AppShell() {
   useCartSync();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
+  const firstView = useRef(true);
+  useEffect(() => {
+    if (firstView.current) {
+      firstView.current = false;
+      return;
+    }
+    (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "PageView");
+  }, [pathname]);
 
   // The admin dashboard is a standalone workspace — no storefront header, footer,
   // bottom navigation or floating shopper widgets.
