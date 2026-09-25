@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+// src/routes/admin_.login.tsx
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Loader2, Lock, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -53,28 +54,105 @@ function AdminLogin() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-navy px-4">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-sm rounded-2xl bg-card p-8 shadow-shelf"
-      >
-        <div className="flex flex-col items-center text-center">
-          <img src={logo} alt="Sanabooks India" className="h-14 w-14 rounded-full bg-cream object-contain" />
-          <p className="eyebrow mt-4 flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5" /> Admin panel
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Left Side: Auth Form */}
+      <div className="flex w-full flex-col justify-between p-8 sm:p-12 lg:w-1/2 lg:p-16">
+        <div>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Store
+          </Link>
+        </div>
+
+        <div className="mx-auto w-full max-w-sm py-8">
+          <div className="mb-6 flex items-center gap-3">
+            <img src={logo} alt="Sanabooks" className="h-10 w-10 rounded-full object-contain" />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-primary">Sanabooks India</p>
+              <h1 className="text-xl font-bold tracking-tight">Staff Sign In</h1>
+            </div>
+          </div>
+
+          <form onSubmit={submit} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-foreground">Email</label>
+              <Input
+                type="email"
+                required
+                placeholder="name@sanabooks.in"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-foreground">Password</label>
+              <Input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="mt-1"
+              />
+            </div>
+
+            <Button type="submit" className="mt-2 w-full rounded-full" disabled={busy}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+              Sign in to Dashboard
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Restricted area. All sign-in attempts are verified against team records.
           </p>
-          <h1 className="mt-2 text-2xl font-bold">Staff sign in</h1>
-          <p className="mt-1 text-xs text-muted-foreground">For Sanabooks India team members only.</p>
         </div>
-        <div className="mt-6 space-y-3">
-          <Input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-          <Input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Sanabooks India Management Console
+        </p>
+      </div>
+
+      {/* Right Side: Branded Showcase */}
+      <div className="hidden flex-col justify-between bg-navy p-12 text-navy-foreground lg:flex lg:w-1/2 lg:p-16">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-saffron" />
+          <span className="text-xs font-bold uppercase tracking-widest text-saffron">Secure Control Panel</span>
         </div>
-        <Button type="submit" className="mt-5 w-full rounded-full" disabled={busy}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-          Sign in to admin
-        </Button>
-      </form>
+
+        <div className="max-w-md space-y-6">
+          <h2 className="text-3xl font-extrabold tracking-tight">
+            Curating India's finest early-learning libraries.
+          </h2>
+          <p className="text-sm leading-relaxed text-navy-foreground/80">
+            Manage your catalogue of 85+ educational titles, track order fulfillments, oversee customer accounts, and adjust live store settings.
+          </p>
+          <div className="space-y-3 pt-2 text-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              <span>Real-time inventory and coupon management</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              <span>Pincode-based delivery routing across India</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              <span>Role-based team permissions and access audit</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-navy-foreground/60">
+          <BookOpen className="h-4 w-4" />
+          <span>Sanabooks Singapore & India Expansion Platform</span>
+        </div>
+      </div>
     </div>
   );
 }
