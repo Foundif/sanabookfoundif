@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCustomerSummaries } from "@/lib/admin";
 import { formatINR } from "@/lib/catalog";
 
-export const Route = createFileRoute("/admin/customers")({
+export const Route = createFileRoute("/admin/customers/")({
   component: AdminCustomers,
 });
 
