@@ -163,19 +163,25 @@ export interface CustomerSummary {
   createdAt: string | null;
 }
 
-/** Merges profiles with order history so staff see one row per shopper. */
+// in src/lib/admin.ts -> fetchCustomerSummaries
 export async function fetchCustomerSummaries(): Promise<CustomerSummary[]> {
-  const [profiles, orders] = await Promise.all([
+  const [profiles, orders, roles] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, display_name, phone, city, child_name, child_age, created_at"),
     supabase.from("orders").select("user_id, email, full_name, phone, city, total, created_at"),
+    supabase.from("user_roles").select("user_id, role").in("role", ["admin", "staff"]),
   ]);
   if (profiles.error) throw profiles.error;
   if (orders.error) throw orders.error;
 
+  const staffUserIds = new Set((roles.data ?? []).map((r) => r.user_id));
+
   const byId = new Map<string, CustomerSummary>();
   for (const p of profiles.data ?? []) {
+    // Skip admins and staff accounts from the customer roster
+    if (staffUserIds.has(p.id)) continue;
+
     byId.set(p.id, {
       id: p.id,
       name: p.display_name ?? "Shopper",
@@ -192,6 +198,7 @@ export async function fetchCustomerSummaries(): Promise<CustomerSummary[]> {
   }
 
   for (const o of orders.data ?? []) {
+    if (o.user_id && staffUserIds.has(o.user_id)) continue;
     const key = o.user_id ?? `guest:${o.email.toLowerCase()}`;
     const existing =
       byId.get(key) ??
