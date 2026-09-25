@@ -19,23 +19,51 @@ export interface SiteSettings {
   header_notice_enabled?: boolean;
 }
 
-export async function fetchSiteSettings(): Promise<SiteSettings | null> {
+const FALLBACK_SETTINGS: SiteSettings = {
+  id: "81d51d36-0522-4eb1-bf24-f552d7c916f5",
+  maintenance_enabled: false,
+  maintenance_heading: "We are getting the shelves ready",
+  maintenance_message: "Sanabooks India is briefly offline for a quick update.",
+  maintenance_ends_at: null,
+  show_countdown: true,
+  header_notices: DEFAULT_NOTICES,
+  header_notice_enabled: true,
+};
+
+export async function fetchSiteSettings(): Promise<SiteSettings> {
+  // First attempt: fetch all columns including notices
   const { data, error } = await supabase
     .from("site_settings")
     .select(
-      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown, header_notices, header_notice_enabled",
+      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown, header_notices, header_notice_enabled"
     )
     .limit(1)
     .maybeSingle();
-  if (error) return null;
-  return (data ?? null) as unknown as SiteSettings | null;
+
+  if (!error && data) {
+    return data as unknown as SiteSettings;
+  }
+
+  // Second attempt fallback: fetch basic columns if custom columns don't exist yet
+  const { data: basicData, error: basicError } = await supabase
+    .from("site_settings")
+    .select("id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown")
+    .limit(1)
+    .maybeSingle();
+
+  if (!basicError && basicData) {
+    return {
+      ...(basicData as unknown as SiteSettings),
+      header_notices: DEFAULT_NOTICES,
+      header_notice_enabled: true,
+    };
+  }
+
+  return FALLBACK_SETTINGS;
 }
 
 export async function saveSiteSettings(id: string, patch: Partial<Omit<SiteSettings, "id">>) {
-  const { error } = await supabase
-    .from("site_settings")
-    .update(patch as any)
-    .eq("id", id);
+  const { error } = await supabase.from("site_settings").update(patch as any).eq("id", id);
   if (error) throw error;
 }
 
