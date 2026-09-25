@@ -372,6 +372,7 @@ export type Database = {
           handle: string
           id: string
           image_url: string | null
+          images: string[]
           low_stock_threshold: number
           price: number
           product_type: string
@@ -391,6 +392,7 @@ export type Database = {
           handle: string
           id?: string
           image_url?: string | null
+          images?: string[]
           low_stock_threshold?: number
           price?: number
           product_type?: string
@@ -410,6 +412,7 @@ export type Database = {
           handle?: string
           id?: string
           image_url?: string | null
+          images?: string[]
           low_stock_threshold?: number
           price?: number
           product_type?: string
