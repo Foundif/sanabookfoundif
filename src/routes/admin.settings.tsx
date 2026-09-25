@@ -219,13 +219,25 @@ function AdminSettings() {
     }
   };
 
-  if (isLoading || !data) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
+ if (isLoading) {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    </div>
+  );
+}
+
+if (!data) {
+  return (
+    <div className="p-8 text-center">
+      <p className="text-sm text-muted-foreground">Unable to load settings.</p>
+      <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-3">
+        Retry
+      </Button>
+    </div>
+  );
+}
+
 
   const preview = endsAt ? countdownParts(new Date(endsAt).toISOString(), now) : null;
   const currentNoticesList = noticesText.split("\n").map((s) => s.trim()).filter(Boolean);
