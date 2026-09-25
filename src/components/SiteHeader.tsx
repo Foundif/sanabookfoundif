@@ -43,18 +43,22 @@ export function SiteHeader() {
     staleTime: 60_000,
   });
 
-  const notices = useMemo(() => {
-    const list = settings?.header_notices?.filter((s) => s.trim().length > 0);
-    return list && list.length > 0 ? list : DEFAULT_NOTICES;
+   const notices = useMemo(() => {
+    const list = settings?.header_notices?.filter((s) => typeof s === "string" && s.trim().length > 0);
+    if (list && list.length > 0) return list;
+    return Array.isArray(DEFAULT_NOTICES) && DEFAULT_NOTICES.length > 0
+      ? DEFAULT_NOTICES
+      : ["Free India Shipping on Orders Over ₹499"];
   }, [settings?.header_notices]);
 
   // Multiply notices per track so each half is wider than ultra-wide displays (eliminates blank gap & glitch)
   const repeatedNotices = useMemo(() => {
+    const safeList = notices && notices.length > 0 ? notices : ["Free India Shipping on Orders Over ₹499"];
     const minItems = 12;
-    const factor = Math.max(2, Math.ceil(minItems / notices.length));
+    const factor = Math.max(2, Math.ceil(minItems / safeList.length));
     const combined: string[] = [];
     for (let i = 0; i < factor; i++) {
-      combined.push(...notices);
+      combined.push(...safeList);
     }
     return combined;
   }, [notices]);
