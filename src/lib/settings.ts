@@ -23,7 +23,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings | null> {
   const { data, error } = await supabase
     .from("site_settings")
     .select(
-      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown, header_notices, header_notice_enabled"
+      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown, header_notices, header_notice_enabled",
     )
     .limit(1)
     .maybeSingle();
@@ -32,7 +32,10 @@ export async function fetchSiteSettings(): Promise<SiteSettings | null> {
 }
 
 export async function saveSiteSettings(id: string, patch: Partial<Omit<SiteSettings, "id">>) {
-  const { error } = await supabase.from("site_settings").update(patch).eq("id", id);
+  const { error } = await supabase
+    .from("site_settings")
+    .update(patch as any)
+    .eq("id", id);
   if (error) throw error;
 }
 
