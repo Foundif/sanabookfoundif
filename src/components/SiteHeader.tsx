@@ -43,7 +43,7 @@ export function SiteHeader() {
     staleTime: 60_000,
   });
 
-   const notices = useMemo(() => {
+  const notices = useMemo(() => {
     const list = settings?.header_notices?.filter((s) => typeof s === "string" && s.trim().length > 0);
     if (list && list.length > 0) return list;
     return Array.isArray(DEFAULT_NOTICES) && DEFAULT_NOTICES.length > 0
@@ -78,6 +78,7 @@ export function SiteHeader() {
       {showNotices && (
         <div className="group overflow-hidden bg-navy text-navy-foreground select-none">
           <div className="flex w-max animate-marquee items-center py-1.5 group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+            style={{ animationDuration: "55s" }}
             {[0, 1].map((dup) => (
               <div key={dup} aria-hidden={dup === 1} className="flex shrink-0 items-center gap-6 pr-6">
                 {repeatedNotices.map((notice, i) => (
