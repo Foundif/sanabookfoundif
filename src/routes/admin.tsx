@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ExternalLink,
   FileText,
+  FolderTree,
   Inbox,
   LayoutDashboard,
   Loader2,
@@ -20,6 +21,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import logo from "@/assets/sanabooks-logo.png";
 import { Button } from "@/components/ui/button";
@@ -48,6 +50,7 @@ type AdminPath =
   | "/admin/orders"
   | "/admin/customers"
   | "/admin/products"
+  | "/admin/categories"
   | "/admin/inventory"
   | "/admin/coupons"
   | "/admin/messages"
