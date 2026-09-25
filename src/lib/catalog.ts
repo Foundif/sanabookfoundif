@@ -23,6 +23,7 @@ export interface AdminProductRow {
   price: number;
   compare_at_price: number | null;
   image_url: string | null;
+  images?: string[];
   badge: string | null;
   sort_order: number;
   active: boolean;
@@ -30,6 +31,9 @@ export interface AdminProductRow {
 
 export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
   const tags = [...new Set([...(row.tags ?? []), ...(row.age_tag ? [row.age_tag] : [])])];
+  const gallery = [
+    ...new Set([...(row.image_url ? [row.image_url] : []), ...(row.images ?? [])]),
+  ].filter(Boolean);
   return {
     node: {
       id: `db:${row.id}`,
@@ -47,7 +51,7 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
           }
         : {}),
       images: {
-        edges: row.image_url ? [{ node: { url: row.image_url, altText: row.title } }] : [],
+        edges: gallery.map((url) => ({ node: { url, altText: row.title } })),
       },
       variants: {
         edges: [

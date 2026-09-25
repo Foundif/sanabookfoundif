@@ -45,7 +45,7 @@ import {
 } from "@/lib/cms";
 import { AGE_GROUPS, CATEGORIES, formatINR, invalidateProductCache } from "@/lib/catalog";
 
-export const Route = createFileRoute("/admin/products")({
+export const Route = createFileRoute("/admin/products/")({
   component: AdminProducts,
 });
 

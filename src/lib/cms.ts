@@ -19,6 +19,7 @@ export const emptyProduct: ProductInput = {
   price: 0,
   compare_at_price: null,
   image_url: null,
+  images: [],
   badge: null,
   sort_order: 0,
   active: true,
@@ -32,6 +33,41 @@ export async function fetchAdminProducts(): Promise<ProductRow[]> {
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as unknown as ProductRow[];
+}
+
+export async function fetchAdminProduct(id: string) {
+  const { data, error } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return data as unknown as (ProductRow & { stock: number; low_stock_threshold: number }) | null;
+}
+
+/** Uploads a cover photo to private storage and returns a long-lived link. */
+export async function uploadProductImage(file: File): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("product-images")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  const { data, error: signError } = await supabase.storage
+    .from("product-images")
+    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+  if (signError || !data) throw signError ?? new Error("Could not create image link");
+  return data.signedUrl;
+}
+
+export async function saveProductReturningId(input: ProductInput & { id?: string }) {
+  const { id, ...payload } = input;
+  if (id) {
+    const { error } = await supabase.from("products").update(payload).eq("id", id);
+    if (error) throw error;
+    invalidateProductCache();
+    return id;
+  }
+  const { data, error } = await supabase.from("products").insert(payload).select("id").single();
+  if (error) throw error;
+  invalidateProductCache();
+  return data.id as string;
 }
 
 export async function saveProduct(input: ProductInput & { id?: string }) {
