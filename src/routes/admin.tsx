@@ -72,13 +72,16 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       { to: "/admin/messages", label: "Inbox", icon: Inbox },
     ],
   },
-  {
+
+    {
     title: "Catalogue",
     items: [
       { to: "/admin/products", label: "Products", icon: Package },
+      { to: "/admin/categories", label: "Categories", icon: FolderTree },
       { to: "/admin/inventory", label: "Inventory", icon: Boxes },
     ],
   },
+
   {
     title: "Store",
     items: [
