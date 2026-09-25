@@ -1,5 +1,12 @@
-/** Store-wide settings: maintenance mode with an optional "back online" timer. */
+/** Store-wide settings: maintenance mode and header announcement notices. */
 import { supabase } from "@/integrations/supabase/client";
+
+export const DEFAULT_NOTICES = [
+  "Free India Shipping on Orders Over ₹499",
+  "100% Genuine Activity & Learning Books",
+  "Dispatched within 24 Hours from Chennai",
+  "COD & Instant UPI Available Across India",
+];
 
 export interface SiteSettings {
   id: string;
@@ -8,13 +15,15 @@ export interface SiteSettings {
   maintenance_message: string;
   maintenance_ends_at: string | null;
   show_countdown: boolean;
+  header_notices?: string[] | null;
+  header_notice_enabled?: boolean;
 }
 
 export async function fetchSiteSettings(): Promise<SiteSettings | null> {
   const { data, error } = await supabase
     .from("site_settings")
     .select(
-      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown",
+      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown, header_notices, header_notice_enabled"
     )
     .limit(1)
     .maybeSingle();
