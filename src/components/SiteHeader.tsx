@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Heart, Menu, Search, Sparkles, User } from "lucide-react";
 import logo from "@/assets/sanabooks-logo.png";
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,7 @@ import { CartButton } from "@/components/CartDrawer";
 import { CATEGORIES } from "@/lib/shopify";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
-
-const NOTICES = [
-  "Free shipping over ₹499",
-  "Cash on delivery available",
-  "Up to 25% off bundles",
-  "GST invoicing on every order",
-];
+import { DEFAULT_NOTICES, fetchSiteSettings } from "@/lib/settings";
 
 const MAIN_NAV = [
   { label: "Shop All", to: "/shop" },
@@ -42,6 +37,30 @@ export function SiteHeader() {
   const wishlist = useWishlist();
   const navigate = useNavigate();
 
+  const { data: settings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: fetchSiteSettings,
+    staleTime: 60_000,
+  });
+
+  const notices = useMemo(() => {
+    const list = settings?.header_notices?.filter((s) => s.trim().length > 0);
+    return list && list.length > 0 ? list : DEFAULT_NOTICES;
+  }, [settings?.header_notices]);
+
+  // Multiply notices per track so each half is wider than ultra-wide displays (eliminates blank gap & glitch)
+  const repeatedNotices = useMemo(() => {
+    const minItems = 12;
+    const factor = Math.max(2, Math.ceil(minItems / notices.length));
+    const combined: string[] = [];
+    for (let i = 0; i < factor; i++) {
+      combined.push(...notices);
+    }
+    return combined;
+  }, [notices]);
+
+  const showNotices = settings?.header_notice_enabled ?? true;
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -51,21 +70,26 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-surface">
-      {/* Top Notice Marquee */}
-      <div className="group overflow-hidden bg-navy text-navy-foreground">
-        <div className="flex w-max animate-marquee items-center py-1.5 group-hover:[animation-play-state:paused] motion-reduce:animate-none">
-          {[0, 1].map((dup) => (
-            <div key={dup} aria-hidden={dup === 1} className="flex shrink-0 items-center gap-4 pr-4">
-              {NOTICES.map((notice, i) => (
-                <span key={i} className="flex items-center gap-3 text-xs font-medium tracking-wide whitespace-nowrap">
-                  {notice}
-                  <span className="text-navy-foreground/40">•</span>
-                </span>
-              ))}
-            </div>
-          ))}
+      {/* Top Notice Marquee - Seamless Infinite Loop */}
+      {showNotices && (
+        <div className="group overflow-hidden bg-navy text-navy-foreground select-none">
+          <div className="flex w-max animate-marquee items-center py-1.5 group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+            {[0, 1].map((dup) => (
+              <div key={dup} aria-hidden={dup === 1} className="flex shrink-0 items-center gap-6 pr-6">
+                {repeatedNotices.map((notice, i) => (
+                  <span
+                    key={`${dup}-${i}`}
+                    className="flex shrink-0 items-center gap-3 text-xs font-medium tracking-wide whitespace-nowrap"
+                  >
+                    <span>{notice}</span>
+                    <span className="text-navy-foreground/40">•</span>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Bar */}
       <div className={`border-b border-border transition-shadow ${scrolled ? "shadow-shelf" : ""}`}>
@@ -120,28 +144,27 @@ export function SiteHeader() {
             {/* Mega Menu Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1 rounded-full bg-secondary/80 px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-saffron" />
+                <Button variant="ghost" size="sm" className="gap-1 font-semibold text-primary hover:bg-primary/10">
+                  <Sparkles className="h-4 w-4 text-saffron" />
                   Categories & Bundles
                   <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                </button>
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[520px] p-4 shadow-xl">
-                <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Shop by Category
+              <DropdownMenuContent align="start" className="w-80 p-2">
+                <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Shop by Shelf
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="my-2" />
-                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                <DropdownMenuSeparator />
+                <div className="grid grid-cols-2 gap-1 py-1">
                   {CATEGORIES.map((cat) => (
-                    <DropdownMenuItem
-                      key={cat}
-                      onClick={() => navigate({ to: "/shop", search: { category: cat } })}
-                      className="cursor-pointer rounded-lg px-2.5 py-2 text-xs font-medium hover:bg-secondary focus:bg-secondary"
-                    >
-                      {cat}
+                    <DropdownMenuItem asChild key={cat}>
+                      <Link
+                        to="/shop"
+                        search={{ category: cat }}
+                        className="cursor-pointer text-xs font-medium hover:text-primary"
+                      >
+                        {cat}
+                      </Link>
                     </DropdownMenuItem>
                   ))}
                 </div>
@@ -153,7 +176,7 @@ export function SiteHeader() {
                 key={item.label}
                 to={item.to}
                 params={(item as { params?: Record<string, string> }).params as never}
-                className="text-xs font-semibold text-foreground/85 transition-colors hover:text-primary"
+                className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
               >
                 {item.label}
               </Link>
@@ -162,43 +185,48 @@ export function SiteHeader() {
 
           {/* Search bar */}
           <form
-            className="ml-auto hidden max-w-xs flex-1 items-center gap-2 md:flex"
             onSubmit={(e) => {
               e.preventDefault();
               if (query.trim()) {
                 navigate({ to: "/shop", search: { q: query.trim() } });
               }
             }}
+            className="relative ml-auto hidden max-w-xs flex-1 md:block"
           >
-            <div className="relative w-full">
-              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search books, phonics, bundles..."
-                aria-label="Search books"
-                className="h-9 rounded-full bg-secondary/80 pl-9 text-xs focus:bg-surface"
-              />
-            </div>
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search books, phonics, bundles..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-9 rounded-full pl-9 text-sm"
+            />
           </form>
 
-          {/* Action Icons */}
-          <div className="ml-auto flex items-center gap-1.5 md:ml-0">
-            <Button variant="ghost" size="icon" aria-label={user ? "Your account" : "Sign in"} asChild>
-              <Link to={user ? "/account" : "/auth"}>
-                <User className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="ghost" size="icon" aria-label="Your wishlist" asChild>
-              <Link to={user ? "/account" : "/auth"} search={user ? { tab: "wishlist" } : {}} className="relative">
-                <Heart className="h-4 w-4" />
-                {wishlist.count > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-saffron px-1 text-[10px] font-bold text-saffron-foreground">
-                    {wishlist.count}
-                  </span>
-                )}
-              </Link>
-            </Button>
+          {/* Right actions: Account, Wishlist, Cart */}
+          <div className="flex items-center gap-1">
+            <Link
+              to={user ? "/account" : "/auth"}
+              className="rounded-full p-2 text-foreground/80 hover:bg-secondary hover:text-foreground"
+              aria-label={user ? "My account" : "Sign in"}
+            >
+              <User className="h-5 w-5" />
+            </Link>
+
+            <Link
+              to="/account"
+              search={{ tab: "wishlist" } as never}
+              className="relative rounded-full p-2 text-foreground/80 hover:bg-secondary hover:text-foreground"
+              aria-label="Wishlist"
+            >
+              <Heart className="h-5 w-5" />
+              {wishlist.count > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {wishlist.count}
+                </span>
+              )}
+            </Link>
+
             <CartButton />
           </div>
         </div>
