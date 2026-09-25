@@ -102,9 +102,10 @@ function CategoryEditor() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not delete category"),
   });
 
-  const onFileSelect = async (files: FileList | null) => {
+    const onFileSelect = async (files: FileList | null) => {
     if (!files?.length) return;
     const file = files[0];
+    if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file (JPG, PNG, WebP)");
       return;
@@ -118,9 +119,9 @@ function CategoryEditor() {
       toast.error(e instanceof Error ? e.message : "Image upload failed");
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
     }
   };
+
 
   if (isLoading || !draft) {
     return (
