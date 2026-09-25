@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCustomerSummaries } from "@/lib/admin";
@@ -13,6 +13,8 @@ export const Route = createFileRoute("/admin/customers/")({
 
 function AdminCustomers() {
   const [q, setQ] = useState("");
+  const navigate = useNavigate();
+
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "customers"],
     queryFn: fetchCustomerSummaries,
@@ -23,9 +25,7 @@ function AdminCustomers() {
     return (data ?? []).filter(
       (c) =>
         !needle ||
-        `${c.name} ${c.email} ${c.phone ?? ""} ${c.city ?? ""} ${c.childName ?? ""}`
-          .toLowerCase()
-          .includes(needle),
+        `${c.name} ${c.email} ${c.phone ?? ""} ${c.city ?? ""} ${c.childName ?? ""}`.toLowerCase().includes(needle),
     );
   }, [data, q]);
 
@@ -43,7 +43,7 @@ function AdminCustomers() {
         />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-xs">
         <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-muted/60 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
@@ -53,20 +53,25 @@ function AdminCustomers() {
               <th className="px-4 py-3 text-right">Orders</th>
               <th className="px-4 py-3 text-right">Spend</th>
               <th className="px-4 py-3 text-left">Last order</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                  No customers yet.
+                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
+                  No customers found.
                 </td>
               </tr>
             ) : (
               rows.map((c) => (
-                <tr key={c.id}>
+                <tr
+                  key={c.id}
+                  onClick={() => navigate({ to: "/admin/customers/$id", params: { id: c.id } })}
+                  className="cursor-pointer transition-colors hover:bg-muted/40"
+                >
                   <td className="px-4 py-3">
-                    <p className="font-semibold">{c.name}</p>
+                    <p className="font-semibold text-foreground">{c.name}</p>
                     <p className="text-xs text-muted-foreground">{c.city ?? "—"}</p>
                   </td>
                   <td className="px-4 py-3 text-xs">
@@ -77,9 +82,12 @@ function AdminCustomers() {
                     {c.childName ? `${c.childName}${c.childAge ? `, ${c.childAge}` : ""}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold">{c.orders}</td>
-                  <td className="px-4 py-3 text-right font-bold">{formatINR(c.spend)}</td>
+                  <td className="px-4 py-3 text-right font-bold text-primary">{formatINR(c.spend)}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
                     {c.lastOrder ? new Date(c.lastOrder).toLocaleDateString("en-IN") : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right text-muted-foreground">
+                    <ChevronRight className="inline h-4 w-4" />
                   </td>
                 </tr>
               ))
