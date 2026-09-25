@@ -74,11 +74,13 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-surface">
-      {/* Top Notice Marquee - Seamless Infinite Loop */}
+      {/* Top Notice Marquee - Seamless Infinite Loop with Calm Speed */}
       {showNotices && (
         <div className="group overflow-hidden bg-navy text-navy-foreground select-none">
-          <div className="flex w-max animate-marquee items-center py-1.5 group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+          <div
+            className="flex w-max animate-marquee items-center py-1.5 group-hover:[animation-play-state:paused] motion-reduce:animate-none"
             style={{ animationDuration: "55s" }}
+          >
             {[0, 1].map((dup) => (
               <div key={dup} aria-hidden={dup === 1} className="flex shrink-0 items-center gap-6 pr-6">
                 {repeatedNotices.map((notice, i) => (
