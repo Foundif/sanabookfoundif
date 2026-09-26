@@ -1,3 +1,4 @@
+import { ENQUIRY_ONLY_HANDLES, openEnquiry } from "@/lib/contact-info";
 import { Link } from "@tanstack/react-router";
 import { Heart, Loader2, Plus, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,10 @@ export function ProductCard({
   const saved = wishlist.isSaved(node.handle);
 
   const handleAddToCart = async () => {
+    if (ENQUIRY_ONLY_HANDLES.includes(node.handle)) {
+      openEnquiry(node.title);
+      return;
+    }
     if (!variant) return;
     await addItem({
       product,
@@ -201,7 +206,7 @@ export function ProductCard({
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Plus className="mr-1 h-4 w-4" /> Add to cart
+                    <Plus className="mr-1 h-4 w-4" /> {ENQUIRY_ONLY_HANDLES.includes(node.handle) ? "Enquire" : "Add to cart"}
                   </>
                 )}
               </Button>
@@ -268,7 +273,7 @@ export function ProductCard({
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <Plus className="mr-1 h-4 w-4" /> Add to cart
+                <Plus className="mr-1 h-4 w-4" /> {ENQUIRY_ONLY_HANDLES.includes(node.handle) ? "Enquire" : "Add to cart"}
               </>
             )}
           </Button>

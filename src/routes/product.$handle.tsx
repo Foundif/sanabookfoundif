@@ -1,3 +1,4 @@
+import { ENQUIRY_ONLY_HANDLES, openEnquiry } from "@/lib/contact-info";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -118,6 +119,10 @@ function ProductDetail() {
 
 
   const add = async () => {
+    if (ENQUIRY_ONLY_HANDLES.includes(handle)) {
+      openEnquiry(node.title, variant?.title);
+      return;
+    }
     if (!variant) return;
     await addItem({
       product,
@@ -378,7 +383,7 @@ function ProductDetail() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <ShoppingCart className="mr-2 h-4 w-4" /> Add to cart
+                  <ShoppingCart className="mr-2 h-4 w-4" /> {ENQUIRY_ONLY_HANDLES.includes(handle) ? "Enquire on WhatsApp" : "Add to cart"}
                 </>
               )}
             </Button>
@@ -447,7 +452,7 @@ function ProductDetail() {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <ShoppingCart className="mr-2 h-4 w-4" /> Add to cart
+                <ShoppingCart className="mr-2 h-4 w-4" /> {ENQUIRY_ONLY_HANDLES.includes(handle) ? "Enquire on WhatsApp" : "Add to cart"}
               </>
             )}
           </Button>

@@ -1,3 +1,4 @@
+import { PaymentBadge } from "@/components/PaymentBadge";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -112,6 +113,9 @@ function AdminOrders() {
                       {o.items.length} item{o.items.length === 1 ? "" : "s"}
                       {o.coupon_code ? ` · ${o.coupon_code}` : ""}
                     </p>
+                    <div className="mt-1">
+                      <PaymentBadge status={(o as { payment_status?: string }).payment_status} />
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-semibold">{o.full_name}</p>

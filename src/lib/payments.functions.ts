@@ -71,3 +71,19 @@ export const confirmRazorpayPayment = createServerFn({ method: "POST" })
 
     return { ok: true as const };
   });
+
+/** Marks a still-pending online order as cancelled/failed when the shopper closes Razorpay. */
+export const markPaymentFailed = createServerFn({ method: "POST" })
+  .inputValidator((input: { orderNumber: string; reason: "cancelled" | "failed" }) => ({
+    orderNumber: String(input.orderNumber).slice(0, 40),
+    reason: input.reason === "failed" ? "failed" : "cancelled",
+  }))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("orders")
+      .update({ payment_status: data.reason })
+      .eq("order_number", data.orderNumber)
+      .eq("payment_status", "pending");
+    return { ok: true };
+  });

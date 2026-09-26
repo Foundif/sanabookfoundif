@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const WHATSAPP_NUMBER = "919444166630";
+const WHATSAPP_NUMBER = "919150113923";
 const WHATSAPP_MESSAGE = "Hi Sanabooks India! I'd like to know more about your children's books.";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 

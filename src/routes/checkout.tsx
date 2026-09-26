@@ -12,7 +12,7 @@ import type { ShippingMethodId } from "@/lib/shipping";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuth } from "@/hooks/useAuth";
 import { createOrder, validateCoupon, type CouponResult } from "@/lib/orders";
-import { createRazorpayOrder, confirmRazorpayPayment } from "@/lib/payments.functions";
+import { createRazorpayOrder, confirmRazorpayPayment, markPaymentFailed } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -21,12 +21,12 @@ export const Route = createFileRoute("/checkout")({
       {
         name: "description",
         content:
-          "Complete your Sanabooks India order: pincode-accurate delivery dates, cash on delivery, UPI and card payments, GST invoicing on request.",
+          "Complete your Sanabooks India order: pincode-accurate delivery dates, UPI, card and netbanking payments, GST invoicing on request.",
       },
       { property: "og:title", content: "Secure checkout — Sanabooks India" },
       {
         property: "og:description",
-        content: "COD, UPI and card payments with pincode-accurate delivery windows.",
+        content: "UPI, card and netbanking payments with pincode-accurate delivery windows.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -37,7 +37,6 @@ export const Route = createFileRoute("/checkout")({
 
 const PAYMENTS = [
   { id: "online", label: "UPI / Card / Netbanking", note: "Secured by Razorpay" },
-  { id: "cod", label: "Cash on delivery", note: "₹29 handling fee" },
 ] as const;
 
 type PaymentId = (typeof PAYMENTS)[number]["id"];
@@ -95,7 +94,7 @@ function CheckoutPage() {
   const rawShipping = shipping ? Math.max(0, shipping.total - subtotal) : 0;
   const discount = coupon?.ok ? Math.min(coupon.discount ?? 0, subtotal) : 0;
   const shippingCost = coupon?.ok && coupon.free_shipping ? 0 : rawShipping;
-  const codFee = payment === "cod" ? 29 : 0;
+  const codFee = 0;
   const total = Math.max(0, subtotal - discount + shippingCost + codFee);
 
   const applyCoupon = async () => {
@@ -156,11 +155,6 @@ function CheckoutPage() {
     setBusy(true);
 
     try {
-      if (payment === "cod") {
-        const orderNumber = await createOrder(orderPayload("cod_pending"));
-        finish(orderNumber);
-        return;
-      }
 
       const ready = await loadRazorpayScript();
       if (!ready) throw new Error("Could not reach the payment window. Check your connection.");
@@ -181,8 +175,9 @@ function CheckoutPage() {
         modal: {
           ondismiss: () => {
             setBusy(false);
+            void markPaymentFailed({ data: { orderNumber, reason: "cancelled" } });
             toast.error("Payment cancelled", {
-              description: `Order ${orderNumber} is saved as unpaid. You can pay on delivery instead.`,
+              description: `Order ${orderNumber} was not paid. You can try again anytime.`,
             });
           },
         },
@@ -340,7 +335,7 @@ function CheckoutPage() {
 
           <Button type="submit" size="lg" className="rounded-full" disabled={busy}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {payment === "cod" ? "Place order" : "Pay securely"} · {formatINR(total)}
+            Pay securely · {formatINR(total)}
           </Button>
         </form>
 
