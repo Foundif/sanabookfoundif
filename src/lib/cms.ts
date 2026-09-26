@@ -1,6 +1,13 @@
 /** Admin data layer: product CRUD and editable page content (CMS blocks). */
 import { supabase } from "@/integrations/supabase/client";
-import { invalidateProductCache, type AdminProductRow } from "@/lib/catalog";
+import {
+  invalidateProductCache,
+  type AdminProductRow,
+  type ProductOption,
+  type ProductVariantItem,
+} from "@/lib/catalog";
+
+export type { ProductOption, ProductVariantItem } from "@/lib/catalog";
 
 export type ProductRow = AdminProductRow & {
   created_at: string;
@@ -23,6 +30,8 @@ export const emptyProduct: ProductInput = {
   badge: null,
   sort_order: 0,
   active: true,
+  options: [],
+  variants: [],
 };
 
 export async function fetchAdminProducts(): Promise<ProductRow[]> {
@@ -59,12 +68,12 @@ export async function uploadProductImage(file: File): Promise<string> {
 export async function saveProductReturningId(input: ProductInput & { id?: string }) {
   const { id, ...payload } = input;
   if (id) {
-    const { error } = await supabase.from("products").update(payload).eq("id", id);
+    const { error } = await supabase.from("products").update(payload as any).eq("id", id);
     if (error) throw error;
     invalidateProductCache();
     return id;
   }
-  const { data, error } = await supabase.from("products").insert(payload).select("id").single();
+  const { data, error } = await supabase.from("products").insert(payload as any).select("id").single();
   if (error) throw error;
   invalidateProductCache();
   return data.id as string;
@@ -73,10 +82,10 @@ export async function saveProductReturningId(input: ProductInput & { id?: string
 export async function saveProduct(input: ProductInput & { id?: string }) {
   const payload = { ...input };
   if (input.id) {
-    const { error } = await supabase.from("products").update(payload).eq("id", input.id);
+    const { error } = await supabase.from("products").update(payload as any).eq("id", input.id);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("products").insert(payload);
+    const { error } = await supabase.from("products").insert(payload as any);
     if (error) throw error;
   }
   invalidateProductCache();
@@ -100,28 +109,23 @@ export interface CmsBlockRow {
   link_url: string | null;
   sort_order: number;
   active: boolean;
+  metadata?: Record<string, any>;
+  updated_at: string;
 }
 
-export async function fetchCmsBlocks(page?: string): Promise<CmsBlockRow[]> {
-  let q = supabase.from("cms_blocks").select("*").order("sort_order", { ascending: true });
-  if (page) q = q.eq("page", page);
-  const { data, error } = await q;
+export async function fetchCmsBlocks(): Promise<CmsBlockRow[]> {
+  const { data, error } = await supabase
+    .from("cms_blocks")
+    .select("*")
+    .order("sort_order", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as unknown as CmsBlockRow[];
+  return (data ?? []) as CmsBlockRow[];
 }
 
-export async function saveCmsBlock(block: Partial<CmsBlockRow> & { block_key: string }) {
-  if (block.id) {
-    const { id, ...rest } = block;
-    const { error } = await supabase.from("cms_blocks").update(rest).eq("id", id);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase.from("cms_blocks").insert(block);
-    if (error) throw error;
-  }
-}
-
-export async function deleteCmsBlock(id: string) {
-  const { error } = await supabase.from("cms_blocks").delete().eq("id", id);
+export async function updateCmsBlock(
+  id: string,
+  fields: Partial<Omit<CmsBlockRow, "id" | "updated_at">>,
+) {
+  const { error } = await supabase.from("cms_blocks").update(fields).eq("id", id);
   if (error) throw error;
 }
