@@ -47,7 +47,7 @@ function AgeLanding() {
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products", "age", group.tag],
-    queryFn: () => fetchProducts(60),
+    queryFn: () => fetchProducts(1000),
   });
 
   const inAge = (products ?? []).filter((p) => p.node.tags.includes(group.tag));

@@ -44,12 +44,12 @@ const CHANNELS = [
   {
     icon: Mail,
     title: "Email",
-    lines: ["hello@sanabooksindia.com"],
+    lines: ["stationeriessana@gmail.com"],
   },
   {
     icon: Phone,
     title: "WhatsApp",
-    lines: ["+91 98765 43210 · Mon–Sat 10am–7pm"],
+    lines: ["+91 91501 13923 · Mon–Sat 10am–7pm"],
   },
   {
     icon: MapPin,

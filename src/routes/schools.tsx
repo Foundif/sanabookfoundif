@@ -49,7 +49,7 @@ function Schools() {
       <div className="mt-10 rounded-xl bg-navy p-8 text-navy-foreground">
         <h2 className="text-xl font-bold">Request a quote</h2>
         <p className="mt-2 text-sm opacity-85">
-          Email <span className="font-semibold">schools@sanabooks.in</span> with your grade levels
+          Email <span className="font-semibold">stationeriessana@gmail.com</span> with your grade levels
           and approximate quantity, and we'll send a curated list with institutional pricing within
           two working days.
         </p>

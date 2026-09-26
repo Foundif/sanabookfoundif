@@ -83,7 +83,7 @@ function Shop() {
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products", "shop"],
-    queryFn: () => fetchProducts(60),
+    queryFn: () => fetchProducts(1000),
   });
 
   const filtered = useMemo(() => {

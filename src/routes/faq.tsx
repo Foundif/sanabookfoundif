@@ -162,9 +162,9 @@ function Faq() {
         <h2 className="mt-2 text-2xl font-bold">Talk to a real person</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           {[
-            { icon: Mail, label: "hello@sanabooks.in", note: "Replies in 1 working day", href: "mailto:hello@sanabooks.in" },
-            { icon: Phone, label: "+91 80 4718 2200", note: "Mon–Sat, 10am–6pm IST", href: "tel:+918047182200" },
-            { icon: MessageCircle, label: "WhatsApp us", note: "Order updates & advice", href: "https://wa.me/918047182200" },
+            { icon: Mail, label: "stationeriessana@gmail.com", note: "Replies in 1 working day", href: "mailto:stationeriessana@gmail.com" },
+            { icon: Phone, label: "+91 91501 13923", note: "Mon–Sat, 10am–6pm IST", href: "tel:+919150113923" },
+            { icon: MessageCircle, label: "WhatsApp us", note: "Order updates & advice", href: "https://wa.me/919150113923" },
           ].map((c) => (
             <a
               key={c.label}
