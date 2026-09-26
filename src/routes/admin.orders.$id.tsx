@@ -72,8 +72,8 @@ function AdminOrderDetail() {
             Placed {new Date(data.created_at).toLocaleString("en-IN")}
           </p>
           <div className="mt-2 flex items-center gap-2 text-xs">
-            <PaymentBadge status={data.payment_status} />
-            {data.payment_id && <span className="text-muted-foreground">Razorpay ID: {data.payment_id}</span>}
+            <PaymentBadge status={(data as { payment_status?: string }).payment_status} />
+            {(data as { payment_id?: string }).payment_id && <span className="text-muted-foreground">Razorpay ID: {(data as { payment_id?: string }).payment_id}</span>}
           </div>
         </div>
         <Select value={data.status} onValueChange={(next) => statusMutation.mutate(next)}>
