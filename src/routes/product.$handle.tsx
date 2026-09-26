@@ -120,7 +120,7 @@ function ProductDetail() {
 
   const add = async () => {
     if (ENQUIRY_ONLY_HANDLES.includes(handle)) {
-      openEnquiry(product?.node.title ?? "Party Pals Goodie Bags", selectedVariant?.title);
+      openEnquiry(node.title, variant?.title);
       return;
     }
     if (!variant) return;

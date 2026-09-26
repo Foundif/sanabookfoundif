@@ -70,9 +70,12 @@ export async function createOrder(input: {
   items: OrderItemInput[];
 }): Promise<string> {
   const order_number = newOrderNumber();
-  const { data, error } = await supabase
+  // Guests cannot read orders back, so the id is created here instead of returned.
+  const orderId = crypto.randomUUID();
+  const { error } = await supabase
     .from("orders")
     .insert({
+      id: orderId,
       order_number,
       user_id: input.userId,
       email: input.email,
@@ -93,13 +96,11 @@ export async function createOrder(input: {
       payment_status: input.paymentStatus ?? "pending",
       notes: input.notes ?? null,
     })
-    .select("id, order_number")
-    .maybeSingle();
+  ;
 
   if (error) throw error;
 
-  const orderId = data?.id;
-  if (orderId && input.items.length) {
+  if (input.items.length) {
     const { error: itemError } = await supabase.from("order_items").insert(
       input.items.map((i) => ({ ...i, order_id: orderId })),
     );
