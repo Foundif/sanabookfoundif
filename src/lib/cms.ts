@@ -126,6 +126,7 @@ export async function updateCmsBlock(
   id: string,
   fields: Partial<Omit<CmsBlockRow, "id" | "updated_at">>,
 ) {
-  const { error } = await supabase.from("cms_blocks").update(fields).eq("id", id);
+  const { error } = await supabase.from("cms_blocks").update(fields as never).eq("id", id);
   if (error) throw error;
 }
+export const saveCmsBlock = updateCmsBlock;
