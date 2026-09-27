@@ -38,10 +38,7 @@ function AdminLogin() {
       toast.error(error?.message ?? "Sign in failed");
       return;
     }
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
     const ok = roles?.some((r) => r.role === "admin" || r.role === "staff");
     setBusy(false);
     if (!ok) {
@@ -71,7 +68,7 @@ function AdminLogin() {
             <img src={logo} alt="Sanabooks" className="h-10 w-10 rounded-full object-contain" />
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-primary">Sanabooks India</p>
-              <h1 className="text-xl font-bold tracking-tight">Staff Sign In</h1>
+              <h1 className="text-xl font-bold tracking-tight">Admin Sign In</h1>
             </div>
           </div>
 
@@ -113,9 +110,7 @@ function AdminLogin() {
           </p>
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Sanabooks India Management Console
-        </p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Sanabooks India Management Console</p>
       </div>
 
       {/* Right Side: Branded Showcase */}
@@ -126,11 +121,10 @@ function AdminLogin() {
         </div>
 
         <div className="max-w-md space-y-6">
-          <h2 className="text-3xl font-extrabold tracking-tight">
-            Curating India's finest early-learning libraries.
-          </h2>
+          <h2 className="text-3xl font-extrabold tracking-tight">Curating India's finest early-learning libraries.</h2>
           <p className="text-sm leading-relaxed text-navy-foreground/80">
-            Manage your catalogue of 85+ educational titles, track order fulfillments, oversee customer accounts, and adjust live store settings.
+            Manage your catalogue of 85+ educational titles, track order fulfillments, oversee customer accounts, and
+            adjust live store settings.
           </p>
           <div className="space-y-3 pt-2 text-xs">
             <div className="flex items-center gap-2.5">
