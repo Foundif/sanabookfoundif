@@ -59,6 +59,39 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          label: string | null
+          meta: Json | null
+          path: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          label?: string | null
+          meta?: Json | null
+          path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          label?: string | null
+          meta?: Json | null
+          path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string | null
@@ -533,6 +566,9 @@ export type Database = {
           maintenance_ends_at: string | null
           maintenance_heading: string
           maintenance_message: string
+          meta_pixel_enabled: boolean | null
+          meta_pixel_id: string | null
+          order_notify_email: string | null
           show_countdown: boolean
           singleton: boolean
           updated_at: string
@@ -546,6 +582,9 @@ export type Database = {
           maintenance_ends_at?: string | null
           maintenance_heading?: string
           maintenance_message?: string
+          meta_pixel_enabled?: boolean | null
+          meta_pixel_id?: string | null
+          order_notify_email?: string | null
           show_countdown?: boolean
           singleton?: boolean
           updated_at?: string
@@ -559,6 +598,9 @@ export type Database = {
           maintenance_ends_at?: string | null
           maintenance_heading?: string
           maintenance_message?: string
+          meta_pixel_enabled?: boolean | null
+          meta_pixel_id?: string | null
+          order_notify_email?: string | null
           show_countdown?: boolean
           singleton?: boolean
           updated_at?: string

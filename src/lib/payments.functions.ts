@@ -69,6 +69,13 @@ export const confirmRazorpayPayment = createServerFn({ method: "POST" })
       .eq("order_number", data.orderNumber);
     if (error) console.error("order payment update failed", error.message);
 
+    try {
+      const { sendOrderEmails } = await import("./order-email.server");
+      await sendOrderEmails(data.orderNumber);
+    } catch (e) {
+      console.error("order email failed", e);
+    }
+
     return { ok: true as const };
   });
 

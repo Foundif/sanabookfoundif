@@ -11,6 +11,7 @@ import { formatINR } from "@/lib/shopify";
 import type { ShippingMethodId } from "@/lib/shipping";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuth } from "@/hooks/useAuth";
+import { pixelTrack, track } from "@/lib/analytics";
 import { createOrder, validateCoupon, type CouponResult } from "@/lib/orders";
 import { createRazorpayOrder, confirmRazorpayPayment, markPaymentFailed } from "@/lib/payments.functions";
 
@@ -140,6 +141,8 @@ function CheckoutPage() {
   });
 
   const finish = (orderNumber: string) => {
+    pixelTrack("Purchase", { value: total, currency: "INR" });
+    track("purchase", orderNumber, { total });
     clearCart();
     setPlaced(orderNumber);
     setBusy(false);

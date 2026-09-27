@@ -19,6 +19,8 @@ import { FloatingWidgets } from "@/components/FloatingWidgets";
 import { Toaster } from "@/components/ui/sonner";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { useCartSync } from "@/hooks/useCartSync";
+import { supabase } from "@/integrations/supabase/client";
+import { installClickTracking, loadMetaPixel, pixelTrack, track } from "@/lib/analytics";
 
 function NotFoundComponent() {
   return (
@@ -112,11 +114,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
     ],
-    scripts: [
-      {
-        children: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','2371989856885975');fbq('track','PageView');`,
-      },
-    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -131,15 +128,6 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            alt=""
-            src="https://www.facebook.com/tr?id=2371989856885975&ev=PageView&noscript=1"
-          />
-        </noscript>
         {children}
         <Scripts />
       </body>
@@ -163,11 +151,25 @@ function AppShell() {
   const isAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
   const firstView = useRef(true);
   useEffect(() => {
+    const off = installClickTracking();
+    void supabase
+      .from("site_settings")
+      .select("*")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        const s = (data ?? {}) as { meta_pixel_id?: string | null; meta_pixel_enabled?: boolean | null };
+        if (s.meta_pixel_enabled !== false && s.meta_pixel_id) loadMetaPixel(s.meta_pixel_id);
+      });
+    return off;
+  }, []);
+  useEffect(() => {
+    track("page_view", typeof document !== "undefined" ? document.title : null);
     if (firstView.current) {
       firstView.current = false;
       return;
     }
-    (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "PageView");
+    pixelTrack("PageView");
   }, [pathname]);
 
   // The admin dashboard is a standalone workspace — no storefront header, footer,
