@@ -22,25 +22,28 @@ function Kpi({
   icon: typeof ShoppingBag;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="rounded-2xl border border-border bg-surface p-3.5 sm:p-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold tracking-[0.12em] text-muted-foreground uppercase">
+        <p className="text-[11px] sm:text-xs font-bold tracking-[0.1em] text-muted-foreground uppercase">
           {label}
         </p>
-        <Icon className="h-4 w-4 text-primary" />
+        <Icon className="h-4 w-4 text-primary shrink-0" />
       </div>
-      <p className="mt-3 text-2xl font-bold">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+      <p className="mt-2 text-xl sm:text-2xl font-bold">{value}</p>
+      {hint ? (
+        <p className="mt-1 text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{hint}</p>
+      ) : null}
     </div>
   );
 }
+
 
 function AdminDashboard() {
   const { data, isLoading } = useQuery({ queryKey: ["admin", "dashboard"], queryFn: fetchDashboard });
 
   if (isLoading || !data) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <Skeleton key={i} className="h-28 rounded-2xl" />
         ))}
@@ -50,7 +53,7 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Kpi
           label="Revenue"
           value={formatINR(data.revenue)}
