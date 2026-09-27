@@ -118,7 +118,7 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
 let dbCache: { at: number; list: ShopifyProduct[] } | null = null;
 
 async function dbProducts(): Promise<ShopifyProduct[]> {
-  if (dbCache && Date.now() - dbCache.at < 30_000) return dbCache.list;
+  if (dbCache && Date.now() - dbCache.at < 600_000) return dbCache.list;
   try {
     const { data, error } = await supabase
       .from("products")
