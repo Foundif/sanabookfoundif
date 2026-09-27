@@ -407,6 +407,7 @@ export type Database = {
           image_url: string | null
           images: string[]
           low_stock_threshold: number
+          options: Json | null
           price: number
           product_type: string
           sort_order: number
@@ -414,6 +415,7 @@ export type Database = {
           tags: string[]
           title: string
           updated_at: string
+          variants: Json | null
         }
         Insert: {
           active?: boolean
@@ -427,6 +429,7 @@ export type Database = {
           image_url?: string | null
           images?: string[]
           low_stock_threshold?: number
+          options?: Json | null
           price?: number
           product_type?: string
           sort_order?: number
@@ -434,6 +437,7 @@ export type Database = {
           tags?: string[]
           title: string
           updated_at?: string
+          variants?: Json | null
         }
         Update: {
           active?: boolean
@@ -447,6 +451,7 @@ export type Database = {
           image_url?: string | null
           images?: string[]
           low_stock_threshold?: number
+          options?: Json | null
           price?: number
           product_type?: string
           sort_order?: number
@@ -454,6 +459,7 @@ export type Database = {
           tags?: string[]
           title?: string
           updated_at?: string
+          variants?: Json | null
         }
         Relationships: []
       }
