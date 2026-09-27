@@ -24,27 +24,22 @@ function Kpi({
   return (
     <div className="rounded-2xl border border-border bg-surface p-3.5 sm:p-4">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] sm:text-xs font-bold tracking-[0.1em] text-muted-foreground uppercase">
-          {label}
-        </p>
+        <p className="text-[11px] sm:text-xs font-bold tracking-[0.1em] text-muted-foreground uppercase">{label}</p>
         <Icon className="h-4 w-4 text-primary shrink-0" />
       </div>
       <p className="mt-2 text-xl sm:text-2xl font-bold">{value}</p>
-      {hint ? (
-        <p className="mt-1 text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{hint}</p>
-      ) : null}
+      {hint ? <p className="mt-1 text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{hint}</p> : null}
     </div>
   );
 }
-
 
 function AdminDashboard() {
   const { data, isLoading } = useQuery({ queryKey: ["admin", "dashboard"], queryFn: fetchDashboard });
 
   if (isLoading || !data) {
     return (
-      <div className="grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {Array.from({ length: 8 }).map((_, i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-28 rounded-2xl" />
         ))}
       </div>
@@ -53,7 +48,8 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <section className="grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* 2x2 grid on mobile (<1024px), 1x4 horizontal row on desktop (lg: >=1024px) */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Kpi
           label="Revenue"
           value={formatINR(data.revenue)}
@@ -92,10 +88,7 @@ function AdminDashboard() {
             </Link>
           ) : null}
           {data.openMessages > 0 ? (
-            <Link
-              to="/admin/messages"
-              className="rounded-full bg-muted px-4 py-2 text-sm font-semibold"
-            >
+            <Link to="/admin/messages" className="rounded-full bg-muted px-4 py-2 text-sm font-semibold">
               {data.openMessages} unread message{data.openMessages === 1 ? "" : "s"}
             </Link>
           ) : null}
