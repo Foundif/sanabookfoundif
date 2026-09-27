@@ -1,4 +1,4 @@
-```tsx
+
 import { useEffect, useState } from "react";
 import {
   createFileRoute,
@@ -615,4 +615,4 @@ function AdminLayout() {
     </div>
   );
 }
-```
+
