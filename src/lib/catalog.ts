@@ -167,6 +167,10 @@ function matchesQuery(product: ShopifyProduct, query: string) {
 }
 
 export async function fetchProducts(
+  export function allProducts(): ShopifyProduct[] {
+  return [...BUNDLE_PRODUCTS, ...CATALOG];
+}
+
   first = 50,
   query?: string,
   sortKey?: string,
