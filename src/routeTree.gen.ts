@@ -20,6 +20,7 @@ import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ReadingRoomRouteImport } from './routes/reading-room'
 import { Route as SchoolsRouteImport } from './routes/schools'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ThankYouRouteImport } from './routes/thank-you'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
@@ -92,6 +93,11 @@ const SchoolsRoute = SchoolsRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThankYouRoute = ThankYouRouteImport.update({
+  id: '/thank-you',
+  path: '/thank-you',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
+  '/thank-you': typeof ThankYouRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
+  '/thank-you': typeof ThankYouRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/reading-room': typeof ReadingRoomRoute
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
+  '/thank-you': typeof ThankYouRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/reading-room'
     | '/schools'
     | '/shop'
+    | '/thank-you'
     | '/admin/analytics'
     | '/admin/content'
     | '/admin/coupons'
@@ -322,6 +332,7 @@ export interface FileRouteTypes {
     | '/reading-room'
     | '/schools'
     | '/shop'
+    | '/thank-you'
     | '/admin/analytics'
     | '/admin/content'
     | '/admin/coupons'
@@ -353,6 +364,7 @@ export interface FileRouteTypes {
     | '/reading-room'
     | '/schools'
     | '/shop'
+    | '/thank-you'
     | '/admin/analytics'
     | '/admin/content'
     | '/admin/coupons'
@@ -385,6 +397,7 @@ export interface RootRouteChildren {
   ReadingRoomRoute: typeof ReadingRoomRoute
   SchoolsRoute: typeof SchoolsRoute
   ShopRoute: typeof ShopRoute
+  ThankYouRoute: typeof ThankYouRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AgeTagRoute: typeof AgeTagRoute
   ProductHandleRoute: typeof ProductHandleRoute
@@ -467,6 +480,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/thank-you': {
+      id: '/thank-you'
+      path: '/thank-you'
+      fullPath: '/thank-you'
+      preLoaderRoute: typeof ThankYouRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -648,6 +668,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReadingRoomRoute: ReadingRoomRoute,
   SchoolsRoute: SchoolsRoute,
   ShopRoute: ShopRoute,
+  ThankYouRoute: ThankYouRoute,
   AdminLoginRoute: AdminLoginRoute,
   AgeTagRoute: AgeTagRoute,
   ProductHandleRoute: ProductHandleRoute,
