@@ -55,7 +55,8 @@ type AdminPath =
   | "/admin/coupons"
   | "/admin/messages"
   | "/admin/content"
-  | "/admin/settings";
+  | "/admin/settings"
+  | "/admin/analytics";
 
 type NavItem = { to: AdminPath; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 
@@ -85,6 +86,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Store",
     items: [
+      { to: "/admin/analytics", label: "Analytics", icon: LayoutDashboard },
       { to: "/admin/coupons", label: "Coupons", icon: BadgePercent },
       { to: "/admin/content", label: "Page content", icon: FileText },
       { to: "/admin/settings", label: "Settings", icon: Wrench },
