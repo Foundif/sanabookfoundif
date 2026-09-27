@@ -1,5 +1,12 @@
+```tsx
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import {
   BadgePercent,
   Boxes,
@@ -35,11 +42,20 @@ export const Route = createFileRoute("/admin")({
       { title: "Store admin — Sanabooks India" },
       {
         name: "description",
-        content: "Manage orders, customers, catalogue, stock and coupons for Sanabooks India.",
+        content: "Manage orders, catalogue, stock, and settings.",
       },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Store admin — Sanabooks India" },
-      { property: "og:description", content: "Internal dashboard for the Sanabooks India store." },
+      { name: "theme-color", content: "#1b2a4a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      {
+        name: "apple-mobile-web-app-status-bar-style",
+        content: "black-translucent",
+      },
+      { name: "apple-mobile-web-app-title", content: "Sana Admin" },
+    ],
+    links: [
+      { rel: "manifest", href: "/admin-manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/sanabooks-logo.png" },
     ],
   }),
   component: AdminLayout,
@@ -58,12 +74,24 @@ type AdminPath =
   | "/admin/settings"
   | "/admin/analytics";
 
-type NavItem = { to: AdminPath; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+type NavItem = {
+  to: AdminPath;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+};
 
 const GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Overview",
-    items: [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }],
+    items: [
+      {
+        to: "/admin",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        exact: true,
+      },
+    ],
   },
   {
     title: "Sales",
@@ -73,8 +101,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       { to: "/admin/messages", label: "Inbox", icon: Inbox },
     ],
   },
-
-    {
+  {
     title: "Catalogue",
     items: [
       { to: "/admin/products", label: "Products", icon: Package },
@@ -82,7 +109,6 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       { to: "/admin/inventory", label: "Inventory", icon: Boxes },
     ],
   },
-
   {
     title: "Store",
     items: [
@@ -102,20 +128,39 @@ function isActive(item: NavItem, pathname: string) {
 
 function AdminLayout() {
   const { user, loading } = useAuth();
-  const { isStaff, isAdmin, loading: roleLoading, refetch } = useRole();
+  const {
+    isStaff,
+    isAdmin,
+    loading: roleLoading,
+    refetch,
+  } = useRole();
+
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = useRouterState({
+    select: (s) => s.location.pathname,
+  });
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // PWA install state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
   useEffect(() => {
     const saved = window.localStorage.getItem("sana-admin-sidebar");
-    if (saved === "collapsed") setCollapsed(true);
+
+    if (saved === "collapsed") {
+      setCollapsed(true);
+    }
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("sana-admin-sidebar", collapsed ? "collapsed" : "expanded");
+    window.localStorage.setItem(
+      "sana-admin-sidebar",
+      collapsed ? "collapsed" : "expanded",
+    );
   }, [collapsed]);
 
   useEffect(() => {
@@ -123,8 +168,67 @@ function AdminLayout() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/admin/login", replace: true });
+    if (!loading && !user) {
+      navigate({ to: "/admin/login", replace: true });
+    }
   }, [loading, user, navigate]);
+
+  // PWA install prompt
+  useEffect(() => {
+    // Check if running as installed standalone app
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+
+    if (isStandalone) return;
+
+    // Don't show the banner if the user dismissed it
+    const dismissed = sessionStorage.getItem("admin_install_dismissed");
+
+    if (dismissed) return;
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstall,
+    );
+
+    // Detect iOS Safari
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isAppleDevice = /iphone|ipad|ipod/.test(userAgent);
+
+    if (isAppleDevice && !isStandalone) {
+      setIsIOS(true);
+      setShowInstallBanner(true);
+    }
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstall,
+      );
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === "accepted") {
+      setShowInstallBanner(false);
+    }
+
+    setDeferredPrompt(null);
+  };
 
   if (loading || roleLoading || !user) {
     return (
@@ -139,31 +243,45 @@ function AdminLayout() {
       <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
         <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
           <ShieldCheck className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-4 text-2xl font-bold">Staff access only</h1>
+
+          <h1 className="mt-4 text-2xl font-bold">
+            Staff access only
+          </h1>
+
           <p className="mt-2 text-sm text-muted-foreground">
-            This area is for the Sanabooks team. If you are the store owner and no owner account has
-            been set up yet, you can claim it now.
+            This area is for the Sanabooks team. If you are the store owner
+            and no owner account has been set up yet, you can claim it now.
           </p>
+
           <Button
             className="mt-6 rounded-full"
             onClick={async () => {
               try {
                 const ok = await claimAdmin();
+
                 if (ok) {
                   toast.success("You are now the store owner.");
                   await refetch();
                 } else {
-                  toast.error("An owner already exists. Ask them to add you as staff.");
+                  toast.error(
+                    "An owner already exists. Ask them to add you as staff.",
+                  );
                 }
               } catch {
-                toast.error("Could not claim owner access. Please try again.");
+                toast.error(
+                  "Could not claim owner access. Please try again.",
+                );
               }
             }}
           >
             Claim owner access
           </Button>
+
           <p className="mt-6 text-sm">
-            <Link to="/" className="font-semibold text-primary">
+            <Link
+              to="/"
+              className="font-semibold text-primary"
+            >
               Back to the shop
             </Link>
           </p>
@@ -172,23 +290,32 @@ function AdminLayout() {
     );
   }
 
-  const current = [...ALL_ITEMS].reverse().find((i) => isActive(i, pathname));
+  const current = [...ALL_ITEMS]
+    .reverse()
+    .find((i) => isActive(i, pathname));
+
   const sectionTitle = current?.label ?? "Dashboard";
   const initial = (user.email ?? "A").charAt(0).toUpperCase();
 
   const SidebarBody = ({ compact }: { compact: boolean }) => (
     <div className="flex h-full flex-col">
       <div
-        className={`flex items-center gap-3 border-b border-border/60 px-4 py-4 ${compact ? "justify-center px-2" : ""}`}
+        className={`flex items-center gap-3 border-b border-border/60 px-4 py-4 ${
+          compact ? "justify-center px-2" : ""
+        }`}
       >
         <img
           src={logo}
           alt="Sanabooks India"
           className="h-9 w-9 shrink-0 rounded-lg object-contain"
         />
+
         {!compact && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold">Sanabooks India</p>
+            <p className="truncate text-sm font-bold">
+              Sanabooks India
+            </p>
+
             <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
               Admin portal
             </p>
@@ -204,9 +331,11 @@ function AdminLayout() {
                 {group.title}
               </p>
             )}
+
             <div className="space-y-1">
               {group.items.map((item) => {
                 const active = isActive(item, pathname);
+
                 return (
                   <Link
                     key={item.to}
@@ -222,7 +351,12 @@ function AdminLayout() {
                     }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
-                    {!compact && <span className="truncate">{item.label}</span>}
+
+                    {!compact && (
+                      <span className="truncate">
+                        {item.label}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -240,6 +374,7 @@ function AdminLayout() {
           }`}
         >
           <ExternalLink className="h-4 w-4 shrink-0" />
+
           {!compact && "View live store"}
         </Link>
       </div>
@@ -266,6 +401,7 @@ function AdminLayout() {
             className="absolute inset-0 bg-foreground/50"
             onClick={() => setMobileOpen(false)}
           />
+
           <div className="absolute inset-y-0 left-0 w-72 bg-card shadow-xl">
             <button
               type="button"
@@ -275,12 +411,14 @@ function AdminLayout() {
             >
               <X className="h-4 w-4" />
             </button>
+
             <SidebarBody compact={false} />
           </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Header */}
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
           <Button
             variant="ghost"
@@ -291,11 +429,14 @@ function AdminLayout() {
           >
             <Menu className="h-5 w-5" />
           </Button>
+
           <Button
             variant="ghost"
             size="icon"
             className="hidden lg:inline-flex"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={
+              collapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
             onClick={() => setCollapsed((c) => !c)}
           >
             {collapsed ? (
@@ -309,14 +450,21 @@ function AdminLayout() {
             <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
               Store admin
             </p>
-            <h1 className="truncate text-base font-bold md:text-lg">{sectionTitle}</h1>
+
+            <h1 className="truncate text-base font-bold md:text-lg">
+              {sectionTitle}
+            </h1>
           </div>
 
           <div className="hidden items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 sm:flex">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               {initial}
             </span>
-            <span className="max-w-[180px] truncate text-xs font-semibold">{user.email}</span>
+
+            <span className="max-w-[180px] truncate text-xs font-semibold">
+              {user.email}
+            </span>
+
             <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
               {isAdmin ? "Owner" : "Staff"}
             </span>
@@ -332,24 +480,139 @@ function AdminLayout() {
             }}
           >
             <LogOut className="h-4 w-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Sign out</span>
+
+            <span className="hidden sm:inline">
+              Sign out
+            </span>
           </Button>
         </header>
 
-        <main className="min-w-0 flex-1 px-4 py-6 md:px-6 md:py-8">
+        {/* Main content */}
+        <main className="min-w-0 flex-1 px-4 py-6 pb-24 md:px-6 md:py-8 lg:pb-8">
           <div className="mx-auto max-w-6xl">
             {pathname !== "/admin" && (
               <Link
                 to="/admin"
                 className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
               >
-                <ChevronLeft className="h-3.5 w-3.5" /> Dashboard
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Dashboard
               </Link>
             )}
+
             <Outlet />
           </div>
         </main>
       </div>
+
+      {/* Install App Banner Toast */}
+      {showInstallBanner && (
+        <div className="fixed bottom-18 left-3 right-3 z-40 rounded-xl border border-primary/20 bg-card p-3 shadow-xl backdrop-blur lg:bottom-4 lg:left-auto lg:right-4 lg:max-w-sm">
+          <div className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="Sana Admin"
+              className="h-9 w-9 shrink-0 rounded-lg bg-muted p-1 object-contain"
+            />
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-foreground">
+                Install Sana Admin App
+              </p>
+
+              <p className="text-[11px] text-muted-foreground">
+                {isIOS
+                  ? "Tap Share [⎋] then 'Add to Home Screen'"
+                  : "Fast 1-tap access on your phone"}
+              </p>
+            </div>
+
+            {!isIOS && deferredPrompt && (
+              <Button
+                size="sm"
+                className="h-8 rounded-lg px-3 text-xs"
+                onClick={handleInstallClick}
+              >
+                Install
+              </Button>
+            )}
+
+            <button
+              type="button"
+              aria-label="Dismiss install banner"
+              onClick={() => {
+                setShowInstallBanner(false);
+                sessionStorage.setItem(
+                  "admin_install_dismissed",
+                  "true",
+                );
+              }}
+              className="p-1 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-around border-t border-border bg-card/95 px-1 py-2 backdrop-blur lg:hidden">
+        {[
+          {
+            to: "/admin" as AdminPath,
+            label: "Home",
+            icon: LayoutDashboard,
+          },
+          {
+            to: "/admin/orders" as AdminPath,
+            label: "Orders",
+            icon: ShoppingBag,
+          },
+          {
+            to: "/admin/products" as AdminPath,
+            label: "Products",
+            icon: Package,
+          },
+          {
+            to: "/admin/inventory" as AdminPath,
+            label: "Stocks",
+            icon: Boxes,
+          },
+          {
+            to: "/admin/settings" as AdminPath,
+            label: "Profile",
+            icon: ShieldCheck,
+          },
+        ].map((tab) => {
+          const active =
+            tab.to === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(tab.to);
+
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1 transition-colors ${
+                active
+                  ? "font-bold text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <tab.icon
+                className={`h-5 w-5 ${
+                  active ? "text-primary" : ""
+                }`}
+              />
+
+              <span className="text-[10px] tracking-tight">
+                {tab.label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
+```
