@@ -169,9 +169,8 @@ function ProductEditor() {
 
   // Upload image specifically for a variation
   const onVariantFile = async (files: FileList | null) => {
-    if (!files?.length) return;
-    const file = files[0];
-    if (!file.type.startsWith("image/")) return;
+    const file = files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
     setUploadingVariant(true);
     try {
       const url = await uploadProductImage(file);
