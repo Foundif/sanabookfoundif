@@ -19,7 +19,7 @@ function BlockCard({ block }: { block: CmsBlockRow }) {
   const [draft, setDraft] = useState(block);
 
   const save = useMutation({
-    mutationFn: () => saveCmsBlock(draft),
+    mutationFn: () => saveCmsBlock(draft.id, draft),
     onSuccess: async () => {
       toast.success("Page content updated");
       await qc.invalidateQueries({ queryKey: ["cms"] });
@@ -28,16 +28,13 @@ function BlockCard({ block }: { block: CmsBlockRow }) {
     onError: () => toast.error("Could not save this section"),
   });
 
-  const set = <K extends keyof CmsBlockRow>(key: K, value: CmsBlockRow[K]) =>
-    setDraft((d) => ({ ...d, [key]: value }));
+  const set = <K extends keyof CmsBlockRow>(key: K, value: CmsBlockRow[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
   return (
     <article className="rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold tracking-[0.12em] text-muted-foreground uppercase">
-            {block.page}
-          </p>
+          <p className="text-xs font-bold tracking-[0.12em] text-muted-foreground uppercase">{block.page}</p>
           <p className="font-bold">{block.block_key}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -53,41 +50,23 @@ function BlockCard({ block }: { block: CmsBlockRow }) {
         </div>
         <div className="grid gap-1.5 sm:col-span-2">
           <Label>Subheading</Label>
-          <Input
-            value={draft.subheading ?? ""}
-            onChange={(e) => set("subheading", e.target.value || null)}
-          />
+          <Input value={draft.subheading ?? ""} onChange={(e) => set("subheading", e.target.value || null)} />
         </div>
         <div className="grid gap-1.5 sm:col-span-2">
           <Label>Body</Label>
-          <Textarea
-            rows={3}
-            value={draft.body ?? ""}
-            onChange={(e) => set("body", e.target.value || null)}
-          />
+          <Textarea rows={3} value={draft.body ?? ""} onChange={(e) => set("body", e.target.value || null)} />
         </div>
         <div className="grid gap-1.5">
           <Label>Button label</Label>
-          <Input
-            value={draft.link_label ?? ""}
-            onChange={(e) => set("link_label", e.target.value || null)}
-          />
+          <Input value={draft.link_label ?? ""} onChange={(e) => set("link_label", e.target.value || null)} />
         </div>
         <div className="grid gap-1.5">
           <Label>Button link</Label>
-          <Input
-            value={draft.link_url ?? ""}
-            onChange={(e) => set("link_url", e.target.value || null)}
-          />
+          <Input value={draft.link_url ?? ""} onChange={(e) => set("link_url", e.target.value || null)} />
         </div>
       </div>
 
-      <Button
-        className="mt-4 rounded-full"
-        size="sm"
-        disabled={save.isPending}
-        onClick={() => save.mutate()}
-      >
+      <Button className="mt-4 rounded-full" size="sm" disabled={save.isPending} onClick={() => save.mutate()}>
         Save section
       </Button>
     </article>
