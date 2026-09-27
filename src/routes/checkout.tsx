@@ -141,13 +141,17 @@ function CheckoutPage() {
   });
 
   const finish = (orderNumber: string) => {
-    pixelTrack("Purchase", { value: total, currency: "INR" });
-    track("purchase", orderNumber, { total });
-    clearCart();
-    setPlaced(orderNumber);
-    setBusy(false);
-    toast.success("Order placed", { description: `Order ${orderNumber} confirmed.` });
-  };
+  clearCart();
+  setBusy(false);
+  navigate({
+    to: "/thank-you",
+    search: {
+      order: orderNumber,
+      total,
+    },
+  });
+};
+
 
   const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
