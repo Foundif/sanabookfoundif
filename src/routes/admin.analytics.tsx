@@ -201,14 +201,14 @@ function PixelCard() {
   const em = email ?? data.order_notify_email ?? "";
 
   const save = async () => {
-    if (p && !/^\d{8,20}$/.test(p.trim())) return toast.error("Pixel ID should be numbers only.");
+    if (p && !/^\d{8,20}$/.test(p.trim())) { toast.error("Pixel ID should be numbers only."); return; }
     setSaving(true);
     const { error } = await supabase
       .from("site_settings")
       .update({ meta_pixel_id: p.trim() || null, meta_pixel_enabled: en, order_notify_email: em.trim() || null } as never)
       .eq("id", data.id);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Saved", { description: "Changes apply on the live store after refresh." });
     void qc.invalidateQueries({ queryKey: ["pixel-settings"] });
   };

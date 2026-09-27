@@ -38,7 +38,7 @@ export function installClickTracking() {
   const handler = (e: MouseEvent) => {
     const el = (e.target as HTMLElement | null)?.closest("a,button,[data-track]") as HTMLElement | null;
     if (!el) return;
-    const label = (el.dataset.track || el.getAttribute("aria-label") || el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120);
+    const label = (el.dataset["track"] || el.getAttribute("aria-label") || el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120);
     const href = el.getAttribute("href") || "";
     let name = el.tagName === "A" ? "link_click" : "button_click";
     if (/wa\.me|whatsapp/i.test(href) || /whatsapp/i.test(label)) name = "whatsapp_click";
