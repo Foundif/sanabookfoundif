@@ -38,7 +38,8 @@ import {
   saveAccountProfile,
   saveAddress,
 } from "@/lib/account";
-import { allProducts, formatINR } from "@/lib/catalog";
+iimport { allProducts, formatINR, type ShopifyProduct } from "@/lib/catalog";
+
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -378,9 +379,10 @@ function DashboardTab({
           {profile?.child_age ? ` (age ${profile.child_age})` : ""}
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {picks.map((p) => (
-            <ProductCard key={p.node.handle} product={p} />
-          ))}
+          {picks.map((p: ShopifyProduct) => (
+  <ProductCard key={p.node.handle} product={p} />
+))}
+
         </div>
       </Card>
 
@@ -411,7 +413,8 @@ function pickForChild(profile: AccountProfile | null) {
           : age <= 8
             ? "age-6-8"
             : "age-9-12";
-  const matched = tag ? all.filter((p) => p.node.tags.includes(tag)) : [];
+  const matched = tag ? all.filter((p: ShopifyProduct) => p.node.tags.includes(tag)) : [];
+
   return (matched.length >= 3 ? matched : all).slice(0, 3);
 }
 
