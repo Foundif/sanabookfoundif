@@ -48,9 +48,7 @@ export interface AdminProductRow {
 
 export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
   const tags = [...new Set([...(row.tags ?? []), ...(row.age_tag ? [row.age_tag] : [])])];
-  const gallery = [
-    ...new Set([...(row.image_url ? [row.image_url] : []), ...(row.images ?? [])]),
-  ].filter(Boolean);
+  const gallery = [...new Set([...(row.image_url ? [row.image_url] : []), ...(row.images ?? [])])].filter(Boolean);
 
   const hasCustomVariants = Array.isArray(row.variants) && row.variants.length > 0;
 
@@ -60,9 +58,7 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
           id: v.id || `db:${row.id}:v-${idx}`,
           title: v.title,
           price: { amount: String(v.price), currencyCode: "INR" },
-          compareAtPrice: v.compare_at_price
-            ? { amount: String(v.compare_at_price), currencyCode: "INR" }
-            : null,
+          compareAtPrice: v.compare_at_price ? { amount: String(v.compare_at_price), currencyCode: "INR" } : null,
           availableForSale: v.available_for_sale ?? (v.stock !== undefined ? v.stock > 0 : true),
           selectedOptions: v.selected_options || [{ name: "Option", value: v.title }],
         },
@@ -73,9 +69,7 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
             id: `db:${row.id}:default`,
             title: "Default",
             price: { amount: String(row.price), currencyCode: "INR" },
-            compareAtPrice: row.compare_at_price
-              ? { amount: String(row.compare_at_price), currencyCode: "INR" }
-              : null,
+            compareAtPrice: row.compare_at_price ? { amount: String(row.compare_at_price), currencyCode: "INR" } : null,
             availableForSale: true,
             selectedOptions: [{ name: "Format", value: "Default" }],
           },
@@ -89,8 +83,8 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
     Array.isArray(row.options) && row.options.length > 0
       ? row.options
       : hasCustomVariants
-      ? [{ name: "Option", values: row.variants!.map((v) => v.title) }]
-      : [{ name: "Format", values: ["Default"] }];
+        ? [{ name: "Option", values: row.variants!.map((v) => v.title) }]
+        : [{ name: "Format", values: ["Default"] }];
 
   return {
     node: {
@@ -166,11 +160,11 @@ function matchesQuery(product: ShopifyProduct, query: string) {
   });
 }
 
-export async function fetchProducts(
-  export function allProducts(): ShopifyProduct[] {
+export function allProducts(): ShopifyProduct[] {
   return [...BUNDLE_PRODUCTS, ...CATALOG];
 }
 
+export async function fetchProducts(
   first = 50,
   query?: string,
   sortKey?: string,
@@ -196,9 +190,7 @@ export async function fetchProducts(
     });
   } else if (sortKey === "TITLE") {
     filtered.sort((a, b) =>
-      reverse
-        ? b.node.title.localeCompare(a.node.title)
-        : a.node.title.localeCompare(b.node.title),
+      reverse ? b.node.title.localeCompare(a.node.title) : a.node.title.localeCompare(b.node.title),
     );
   }
 
@@ -207,11 +199,7 @@ export async function fetchProducts(
 
 export async function fetchProductByHandle(handle: string): Promise<ShopifyProduct | null> {
   try {
-    const { data } = await supabase
-      .from("products")
-      .select("*")
-      .eq("handle", handle)
-      .maybeSingle();
+    const { data } = await supabase.from("products").select("*").eq("handle", handle).maybeSingle();
     if (data) {
       return adminRowToProduct(data as unknown as AdminProductRow);
     }
