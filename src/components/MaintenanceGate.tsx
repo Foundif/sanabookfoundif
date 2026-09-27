@@ -6,8 +6,8 @@ import logo from "@/assets/sanabooks-logo.png";
 import { countdownParts, fetchSiteSettings, maintenanceActive } from "@/lib/settings";
 import { useRole } from "@/hooks/useRole";
 
-/** Staff and the sign-in/admin routes always stay reachable so the team can switch it back on. */
-const ALWAYS_OPEN = ["/admin", "/auth"];
+/** Only the admin panel stays reachable during maintenance mode. Customer /auth is blocked. */
+const ALWAYS_OPEN = ["/admin"];
 
 export function MaintenanceGate({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -40,12 +40,8 @@ export function MaintenanceGate({ children }: { children: ReactNode }) {
       <p className="eyebrow mt-6 flex items-center gap-2">
         <Hammer className="h-3.5 w-3.5" /> Shop temporarily closed
       </p>
-      <h1 className="mt-3 max-w-2xl text-3xl font-bold md:text-4xl">
-        {settings.maintenance_heading}
-      </h1>
-      <p className="mt-4 max-w-xl text-sm text-muted-foreground md:text-base">
-        {settings.maintenance_message}
-      </p>
+      <h1 className="mt-3 max-w-2xl text-3xl font-bold md:text-4xl">{settings.maintenance_heading}</h1>
+      <p className="mt-4 max-w-xl text-sm text-muted-foreground md:text-base">{settings.maintenance_message}</p>
 
       {parts && (
         <div className="mt-8 flex gap-3">
@@ -55,25 +51,18 @@ export function MaintenanceGate({ children }: { children: ReactNode }) {
             { label: "Minutes", value: parts.minutes },
             { label: "Seconds", value: parts.seconds },
           ].map((p) => (
-            <div
-              key={p.label}
-              className="min-w-18 rounded-xl border border-border bg-card px-4 py-3 shadow-lift"
-            >
-              <span className="block text-2xl font-bold tabular-nums">
-                {String(p.value).padStart(2, "0")}
-              </span>
-              <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-                {p.label}
-              </span>
+            <div key={p.label} className="min-w-18 rounded-xl border border-border bg-card px-4 py-3 shadow-lift">
+              <span className="block text-2xl font-bold tabular-nums">{String(p.value).padStart(2, "0")}</span>
+              <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{p.label}</span>
             </div>
           ))}
         </div>
       )}
 
       <p className="mt-10 text-xs text-muted-foreground">
-        Team member?{" "}
-        <Link to="/auth" className="font-semibold text-primary underline">
-          Sign in to continue
+        Store administrator or team member?{" "}
+        <Link to="/admin/login" className="font-semibold text-primary underline">
+          Sign in to Admin Panel
         </Link>
       </p>
     </div>
