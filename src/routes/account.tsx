@@ -38,8 +38,7 @@ import {
   saveAccountProfile,
   saveAddress,
 } from "@/lib/account";
-iimport { allProducts, formatINR, type ShopifyProduct } from "@/lib/catalog";
-
+import { allProducts, formatINR, type ShopifyProduct } from "@/lib/catalog";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -116,8 +115,7 @@ function AccountPage() {
   });
 
   const saveProfile = useMutation({
-    mutationFn: (patch: Partial<Omit<AccountProfile, "id">>) =>
-      saveAccountProfile(user!.id, patch),
+    mutationFn: (patch: Partial<Omit<AccountProfile, "id">>) => saveAccountProfile(user!.id, patch),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["account-profile", user?.id] });
       toast.success("Saved");
@@ -150,10 +148,7 @@ function AccountPage() {
     (user.user_metadata?.["display_name"] as string | undefined) ??
     user.email?.split("@")[0] ??
     "reader";
-  const booksRead = orders.reduce(
-    (n, o) => n + o.items.reduce((m, i) => m + i.quantity, 0),
-    0,
-  );
+  const booksRead = orders.reduce((n, o) => n + o.items.reduce((m, i) => m + i.quantity, 0), 0);
   const saved = orders.reduce((n, o) => n + Number(o.shipping_fee === 0 ? 49 : 0), 0);
 
   return (
@@ -186,9 +181,7 @@ function AccountPage() {
                   to="/account"
                   search={{ tab: t.id }}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                    tab === t.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-secondary"
+                    tab === t.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >
                   <t.icon className="h-4 w-4" /> {t.label}
@@ -214,17 +207,13 @@ function AccountPage() {
                 loading={ordersQuery.isLoading}
               />
             )}
-            {tab === "orders" && (
-              <OrdersTab orders={orders} loading={ordersQuery.isLoading} />
-            )}
+            {tab === "orders" && <OrdersTab orders={orders} loading={ordersQuery.isLoading} />}
             {tab === "wishlist" && (
               <WishlistTab
                 items={wishlist}
                 loading={wishlistQuery.isLoading}
                 userId={user.id}
-                onChange={() =>
-                  void queryClient.invalidateQueries({ queryKey: ["wishlist", user.id] })
-                }
+                onChange={() => void queryClient.invalidateQueries({ queryKey: ["wishlist", user.id] })}
               />
             )}
             {tab === "addresses" && (
@@ -232,9 +221,7 @@ function AccountPage() {
                 addresses={addresses}
                 loading={addressQuery.isLoading}
                 userId={user.id}
-                onChange={() =>
-                  void queryClient.invalidateQueries({ queryKey: ["addresses", user.id] })
-                }
+                onChange={() => void queryClient.invalidateQueries({ queryKey: ["addresses", user.id] })}
               />
             )}
             {tab === "payments" && (
@@ -252,10 +239,7 @@ function AccountPage() {
               />
             )}
             {tab === "communication" && (
-              <CommunicationTab
-                profile={profile ?? null}
-                onSave={(patch) => saveProfile.mutate(patch)}
-              />
+              <CommunicationTab profile={profile ?? null} onSave={(patch) => saveProfile.mutate(patch)} />
             )}
           </div>
         </div>
@@ -268,9 +252,7 @@ type Orders = Awaited<ReturnType<typeof fetchMyOrders>>;
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rounded-2xl border border-border bg-card p-6 shadow-shelf ${className}`}>
-      {children}
-    </section>
+    <section className={`rounded-2xl border border-border bg-card p-6 shadow-shelf ${className}`}>{children}</section>
   );
 }
 
@@ -282,13 +264,7 @@ function statusTone(status: string) {
 }
 
 function StatusPill({ status }: { status: string }) {
-  return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${statusTone(status)}`}
-    >
-      {status}
-    </span>
-  );
+  return <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${statusTone(status)}`}>{status}</span>;
 }
 
 function DashboardTab({
@@ -327,11 +303,7 @@ function DashboardTab({
       <Card>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Recent order</h2>
-          <Link
-            to="/account"
-            search={{ tab: "orders" }}
-            className="text-sm font-semibold text-primary"
-          >
+          <Link to="/account" search={{ tab: "orders" }} className="text-sm font-semibold text-primary">
             View all →
           </Link>
         </div>
@@ -380,9 +352,8 @@ function DashboardTab({
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {picks.map((p: ShopifyProduct) => (
-  <ProductCard key={p.node.handle} product={p} />
-))}
-
+            <ProductCard key={p.node.handle} product={p} />
+          ))}
         </div>
       </Card>
 
@@ -403,16 +374,7 @@ function DashboardTab({
 function pickForChild(profile: AccountProfile | null) {
   const all = allProducts();
   const age = profile?.child_age;
-  const tag =
-    age == null
-      ? null
-      : age <= 2
-        ? "age-0-2"
-        : age <= 5
-          ? "age-3-5"
-          : age <= 8
-            ? "age-6-8"
-            : "age-9-12";
+  const tag = age == null ? null : age <= 2 ? "age-0-2" : age <= 5 ? "age-3-5" : age <= 8 ? "age-6-8" : "age-9-12";
   const matched = tag ? all.filter((p: ShopifyProduct) => p.node.tags.includes(tag)) : [];
 
   return (matched.length >= 3 ? matched : all).slice(0, 3);
@@ -460,9 +422,7 @@ function OrdersTab({ orders, loading }: { orders: Orders; loading: boolean }) {
               <div className="mt-4 flex gap-1">
                 {ORDER_STATUSES.slice(0, 4).map((s, i) => (
                   <div key={s} className="flex-1">
-                    <div
-                      className={`h-1.5 rounded-full ${i <= step ? "bg-primary" : "bg-secondary"}`}
-                    />
+                    <div className={`h-1.5 rounded-full ${i <= step ? "bg-primary" : "bg-secondary"}`} />
                     <p className="mt-1.5 text-[11px] capitalize text-muted-foreground">{s}</p>
                   </div>
                 ))}
@@ -473,12 +433,7 @@ function OrdersTab({ orders, loading }: { orders: Orders; loading: boolean }) {
               {o.items.map((i) => (
                 <li key={i.id} className="flex items-center gap-3">
                   {i.image_url && (
-                    <img
-                      src={i.image_url}
-                      alt=""
-                      loading="lazy"
-                      className="h-16 w-12 rounded-md object-cover"
-                    />
+                    <img src={i.image_url} alt="" loading="lazy" className="h-16 w-12 rounded-md object-cover" />
                   )}
                   <Link
                     to="/product/$handle"
@@ -543,17 +498,9 @@ function WishlistTab({
       ) : (
         <ul className="mt-4 grid gap-3">
           {items.map((w) => (
-            <li
-              key={w.id}
-              className="flex items-center gap-4 rounded-xl border border-border p-3"
-            >
+            <li key={w.id} className="flex items-center gap-4 rounded-xl border border-border p-3">
               {w.image_url && (
-                <img
-                  src={w.image_url}
-                  alt=""
-                  loading="lazy"
-                  className="h-20 w-16 rounded-md object-cover"
-                />
+                <img src={w.image_url} alt="" loading="lazy" className="h-20 w-16 rounded-md object-cover" />
               )}
               <Link
                 to="/product/$handle"
@@ -562,12 +509,7 @@ function WishlistTab({
               >
                 {w.product_title ?? w.product_handle}
               </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Remove"
-                onClick={() => void remove(w.product_handle)}
-              >
+              <Button variant="ghost" size="icon" aria-label="Remove" onClick={() => void remove(w.product_handle)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </li>
@@ -670,13 +612,9 @@ function AddressesTab({
           {addresses.map((a) => (
             <li key={a.id} className="rounded-xl border border-border p-4">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold tracking-wide uppercase text-primary">
-                  {a.label}
-                </span>
+                <span className="text-xs font-bold tracking-wide uppercase text-primary">{a.label}</span>
                 {a.is_default && (
-                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-bold">
-                    Default
-                  </span>
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-bold">Default</span>
                 )}
               </div>
               <p className="mt-2 text-sm font-bold">{a.full_name}</p>
@@ -758,10 +696,7 @@ function AddressesTab({
               />
             </div>
             <label className="flex items-center gap-3 text-sm sm:col-span-2">
-              <Switch
-                checked={form.is_default}
-                onCheckedChange={(v) => setForm({ ...form, is_default: v })}
-              />
+              <Switch checked={form.is_default} onCheckedChange={(v) => setForm({ ...form, is_default: v })} />
               Use as my default delivery address
             </label>
             <Button type="submit" className="rounded-full sm:col-span-2" disabled={busy}>
@@ -804,8 +739,8 @@ function PaymentsTab({
     <Card>
       <h2 className="text-lg font-bold">Payment methods</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Pick how you usually pay — we preselect it at checkout. We never store card numbers; they
-        are handled by our payment partner.
+        Pick how you usually pay — we preselect it at checkout. We never store card numbers; they are handled by our
+        payment partner.
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {PAYMENT_METHODS.map((m) => (
@@ -826,12 +761,7 @@ function PaymentsTab({
       {method === "upi" && (
         <div className="mt-5 grid max-w-sm gap-1.5">
           <Label htmlFor="upi">Your UPI ID (optional)</Label>
-          <Input
-            id="upi"
-            placeholder="name@bank"
-            value={upi}
-            onChange={(e) => setUpi(e.target.value)}
-          />
+          <Input id="upi" placeholder="name@bank" value={upi} onChange={(e) => setUpi(e.target.value)} />
         </div>
       )}
 
@@ -867,24 +797,16 @@ function ChildTab({
     }
   }, [profile]);
 
-  const toggle = (i: string) =>
-    setInterests((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
+  const toggle = (i: string) => setInterests((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
 
   return (
     <Card>
       <h2 className="text-lg font-bold">Your child's profile</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Help us pick better books — tell us about your reader.
-      </p>
+      <p className="mt-1 text-sm text-muted-foreground">Help us pick better books — tell us about your reader.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="grid gap-1.5">
           <Label htmlFor="child-name">Name</Label>
-          <Input
-            id="child-name"
-            value={name}
-            placeholder="Aanya"
-            onChange={(e) => setName(e.target.value)}
-          />
+          <Input id="child-name" value={name} placeholder="Aanya" onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="child-age">Age</Label>
@@ -965,10 +887,7 @@ function CommunicationTab({
         {COMMS.map(([key, label]) => (
           <li key={key} className="flex items-center justify-between py-4">
             <span className="text-sm font-semibold">{label}</span>
-            <Switch
-              checked={profile ? Boolean(profile[key]) : false}
-              onCheckedChange={(v) => onSave({ [key]: v })}
-            />
+            <Switch checked={profile ? Boolean(profile[key]) : false} onCheckedChange={(v) => onSave({ [key]: v })} />
           </li>
         ))}
       </ul>
