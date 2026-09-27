@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 type Fbq = (...a: unknown[]) => void;
-const w = () => window as unknown as { fbq?: Fbq; _fbq?: unknown };
+const w = () => window as unknown as { fbq?: Fbq };
 
 function sessionId() {
   try {

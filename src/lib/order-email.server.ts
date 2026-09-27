@@ -37,8 +37,9 @@ export async function sendOrderEmails(orderNumber: string) {
   const storeEmail =
     ((settings as Record<string, unknown> | null)?.["order_notify_email"] as string) || "stationeriessana@gmail.com";
 
-  const o = order as Record<string, any>;
-  const items = (o.order_items ?? []) as Array<Record<string, any>>;
+  type Loose = { [k: string]: any } & Record<"order_items"|"product_title"|"variant_title"|"quantity"|"unit_price"|"subtotal"|"discount"|"coupon_code"|"shipping_fee"|"total"|"email"|"full_name"|"address"|"city"|"state"|"pincode"|"phone", any>;
+  const o = order as unknown as Loose;
+  const items = (o.order_items ?? []) as Loose[];
   const rows = items
     .map(
       (i) =>
