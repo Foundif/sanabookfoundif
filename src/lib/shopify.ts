@@ -4,6 +4,7 @@ export const SHOPIFY_API_VERSION = "2025-07";
 export const SHOPIFY_STORE_PERMANENT_DOMAIN = "sanabooks-india-expansion-3nhc0-r7jammgv.myshopify.com";
 export const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 export const SHOPIFY_STOREFRONT_TOKEN = "822bf4258efe2bd1fd7e4a75d311b319";
+
 export interface ShopifyProduct {
   node: {
     id: string;
@@ -30,12 +31,14 @@ export interface ShopifyProduct {
           compareAtPrice: { amount: string; currencyCode: string } | null;
           availableForSale: boolean;
           selectedOptions: Array<{ name: string; value: string }>;
+          image?: { url: string; altText?: string | null };
         };
       }>;
     };
     options: Array<{ name: string; values: string[] }>;
     metafields?: Array<{ key: string; value: string } | null>;
     gift_wrap_price?: number;
+    video_url?: string | null;
   };
 }
 
