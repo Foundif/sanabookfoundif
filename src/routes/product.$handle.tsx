@@ -15,7 +15,6 @@ import { fetchProductByHandle, fetchProducts } from "@/lib/catalog";
 import { useCartStore } from "@/stores/cartStore";
 
 const LANGUAGES = ["English", "Hindi", "Bilingual"] as const;
-const giftWrapFee = Number((node as any).gift_wrap_price ?? 0);
 
 export const Route = createFileRoute("/product/$handle")({
   head: ({ params }) => {
@@ -122,19 +121,30 @@ function ProductDetail() {
     selectedOptions: optionsWithWrap,
   });
 
+  const giftWrapFee = Number(node.gift_wrap_price ?? 0);
+
   const add = async () => {
     if (ENQUIRY_ONLY_HANDLES.includes(handle)) {
       openEnquiry(node.title, variant?.title);
       return;
     }
     if (!variant) return;
+
+    const finalUnitPrice = parseFloat(variant.price.amount) + (giftWrap && giftWrapFee > 0 ? giftWrapFee : 0);
+    const optionsWithWrap = [
+      ...(variant.selectedOptions || []),
+      ...(giftWrap
+        ? [{ name: "Gift Wrap", value: giftWrapFee > 0 ? `Yes (+${formatINR(giftWrapFee)})` : "Yes (Free)" }]
+        : []),
+    ];
+
     await addItem({
       product,
-      variantId: variant.id,
-      variantTitle: variant.title,
-      price: variant.price,
+      variantId: giftWrap && giftWrapFee > 0 ? `${variant.id}-gw` : variant.id,
+      variantTitle: giftWrap && giftWrapFee > 0 ? `${variant.title} (Gift Wrapped)` : variant.title,
+      price: { amount: String(finalUnitPrice), currencyCode: "INR" },
       quantity: 1,
-      selectedOptions: variant.selectedOptions || [],
+      selectedOptions: optionsWithWrap,
     });
     toast.success("Added to basket", { description: node.title, position: "top-center" });
   };
