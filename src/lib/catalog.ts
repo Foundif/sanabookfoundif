@@ -47,25 +47,22 @@ export interface AdminProductRow {
   variants?: ProductVariantItem[];
   gift_wrap_price?: number | null; // <--- ADD THIS
 }
-
 export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
-  const prod: any = {
-    node: {
-      id: `db:${row.id}`,
-      title: row.title,
-      // ... existing fields
-    },
-  };
-  prod.node.gift_wrap_price = row.gift_wrap_price ?? 0;
-  return prod as ShopifyProduct;
+  const tags: string[] = [...new Set([...(row.tags ?? []), ...(row.age_tag ? [row.age_tag] : [])])].filter(
+    (t): t is string => Boolean(t),
+  );
 
-  const tags = [...new Set([...(row.tags ?? []), ...(row.age_tag ? [row.age_tag] : [])])];
-  const gallery = [...new Set([...(row.image_url ? [row.image_url] : []), ...(row.images ?? [])])].filter(Boolean);
+  const gallery: string[] = [
+    ...new Set([
+      ...(row.image_url ? [row.image_url] : []),
+      ...(row.images ?? []).filter((img): img is string => Boolean(img)),
+    ]),
+  ].filter((url): url is string => Boolean(url));
 
   const hasCustomVariants = Array.isArray(row.variants) && row.variants.length > 0;
 
   const variantEdges = hasCustomVariants
-    ? row.variants!.map((v, idx) => ({
+    ? (row.variants ?? []).map((v, idx) => ({
         node: {
           id: v.id || `db:${row.id}:v-${idx}`,
           title: v.title,
@@ -92,11 +89,11 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
   const prices = variantEdges.map((e) => parseFloat(e.node.price.amount) || row.price);
   const minPrice = Math.min(...prices);
 
-  const options =
+  const options: Array<{ name: string; values: string[] }> =
     Array.isArray(row.options) && row.options.length > 0
       ? row.options
       : hasCustomVariants
-        ? [{ name: "Option", values: row.variants!.map((v) => v.title) }]
+        ? [{ name: "Option", values: (row.variants ?? []).map((v) => v.title) }]
         : [{ name: "Format", values: ["Default"] }];
 
   return {
@@ -122,6 +119,7 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
         edges: variantEdges,
       },
       options,
+      gift_wrap_price: Number(row.gift_wrap_price) || 0,
     },
   };
 }
