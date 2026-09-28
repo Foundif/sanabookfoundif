@@ -2,18 +2,8 @@ import { ENQUIRY_ONLY_HANDLES, openEnquiry } from "@/lib/contact-info";
 import { Label } from "@/components/ui/label";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import {
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  Gift,
-  Loader2,
-  RotateCcw,
-  ShoppingCart,
-  Truck,
-  Video,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Gift, Loader2, RotateCcw, ShoppingCart, Truck, Video } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -117,31 +107,37 @@ function ProductDetail() {
   const giftWrapFee = Number(node.gift_wrap_price ?? 0);
   const videoUrl = node.video_url;
 
-  // Build the dynamic gallery: Selected variation's photos come first, followed by general photos
-  const displayImages = useMemo(() => {
-    const baseImages = node.images.edges;
-    const variantNode = variants[variantIndex]?.node;
-    const varImages: string[] = [];
+  // Build the dynamic gallery: selected variation photos come first,
+  // followed by the product's general photos.
+  const baseImages = node.images?.edges ?? [];
+  const variantNode = variants[variantIndex]?.node;
+  const varImages: string[] = [];
 
-    if (variantNode) {
-      const anyVar = variantNode as unknown as { images?: string[]; image?: { url: string } };
-      if (Array.isArray(anyVar.images) && anyVar.images.length > 0) {
-        varImages.push(...anyVar.images);
-      } else if (anyVar.image?.url) {
-        varImages.push(anyVar.image.url);
-      }
+  if (variantNode) {
+    const anyVar = variantNode as unknown as {
+      images?: string[];
+      image?: { url: string };
+    };
+
+    if (Array.isArray(anyVar.images) && anyVar.images.length > 0) {
+      varImages.push(...anyVar.images);
+    } else if (anyVar.image?.url) {
+      varImages.push(anyVar.image.url);
     }
+  }
 
-    if (varImages.length > 0) {
-      const combined = [
-        ...varImages.map((url) => ({ node: { url, altText: variantNode?.title ?? node.title } })),
-        ...baseImages.filter((b) => !varImages.includes(b.node.url)),
-      ];
-      return combined;
-    }
-
-    return baseImages;
-  }, [node.images.edges, variants, variantIndex, node.title]);
+  const displayImages =
+    varImages.length > 0
+      ? [
+          ...varImages.map((url) => ({
+            node: {
+              url,
+              altText: variantNode?.title ?? node.title,
+            },
+          })),
+          ...baseImages.filter((image) => !varImages.includes(image.node.url)),
+        ]
+      : baseImages;
 
   // When a variation is tapped, switch immediately to its photo
   const handleSelectVariant = (idx: number) => {
@@ -425,7 +421,7 @@ function ProductDetail() {
       {/* Related Books Rail */}
       {relatedItems.length > 0 && (
         <div className="mt-16 border-t border-border pt-12">
-          <ProductRail title="You May Also Like" items={relatedItems} />
+          <ProductRail title="You May Also Like" products={relatedItems} />
         </div>
       )}
     </div>
