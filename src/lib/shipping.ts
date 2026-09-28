@@ -127,13 +127,22 @@ export function dispatchNote(now = new Date()) {
   const hour = ist.getHours();
   return hour < 16 ? "Ordered now, dispatched today" : "Dispatched next working day";
 }
+export interface ShippingRatesConfig {
+  freeThreshold?: number;
+  standardCharge?: number;
+  expressCharge?: number;
+}
 
-export function shippingOptions(pincode: string, subtotal: number): ShippingOption[] {
+export function shippingOptions(pincode: string, subtotal: number, config?: ShippingRatesConfig): ShippingOption[] {
   const zone = zoneForPincode(pincode);
   if (!zone) return [];
 
-  const standardFree = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const standardPrice = standardFree ? 0 : 49 + zone.surcharge;
+  const freeThreshold = config?.freeThreshold ?? FREE_SHIPPING_THRESHOLD;
+  const baseStandard = config?.standardCharge ?? 49;
+  const baseExpress = config?.expressCharge ?? 99;
+
+  const standardFree = subtotal >= freeThreshold;
+  const standardPrice = standardFree ? 0 : baseStandard + zone.surcharge;
 
   const options: ShippingOption[] = [
     {
@@ -151,7 +160,7 @@ export function shippingOptions(pincode: string, subtotal: number): ShippingOpti
       id: "express",
       label: "Express delivery",
       note: `Priority courier · ${zone.expressDays[0]}–${zone.expressDays[1]} working days`,
-      price: 99 + zone.surcharge,
+      price: baseExpress + zone.surcharge,
       free: false,
       window: zone.expressDays,
       etaLabel: deliveryWindowLabel(zone.expressDays),
