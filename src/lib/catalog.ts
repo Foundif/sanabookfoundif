@@ -27,7 +27,6 @@ export interface ProductVariantItem {
   selected_options?: Array<{ name: string; value: string }>;
   image_url?: string | null; // <--- Add this
 }
-
 export interface AdminProductRow {
   id: string;
   handle: string;
@@ -45,8 +44,10 @@ export interface AdminProductRow {
   active: boolean;
   options?: ProductOption[];
   variants?: ProductVariantItem[];
-  gift_wrap_price?: number | null; // <--- ADD THIS
+  gift_wrap_price?: number | null;
+  video_url?: string | null;
 }
+
 export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
   const tags: string[] = [...new Set([...(row.tags ?? []), ...(row.age_tag ? [row.age_tag] : [])])].filter(
     (t): t is string => Boolean(t),
@@ -119,7 +120,8 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
         edges: variantEdges,
       },
       options,
-      gift_wrap_price: Number(row.gift_wrap_price) || 0,
+      gift_wrap_price: Number(row.gift_wrap_price ?? 0),
+      video_url: row.video_url ?? null,
     },
   };
 }
