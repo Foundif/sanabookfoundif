@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Camera, ImagePlus, Loader2, Plus, Sparkles, Star, Trash2, X } from "lucide-react";
+import { ArrowLeft, Camera, ImagePlus, Loader2, Plus, Sparkles, Star, Trash2, Video, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,14 @@ import {
   fetchAdminProduct,
   saveProductReturningId,
   uploadProductImage,
+  uploadProductVideo,
   type ProductInput,
   type ProductVariantItem,
 } from "@/lib/cms";
 import { AGE_GROUPS, CATEGORIES, invalidateProductCache } from "@/lib/catalog";
+
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB strict
+const MAX_GALLERY_IMAGES = 5; // Max 5 gallery photos
 
 export const Route = createFileRoute("/admin/products/$id")({
   component: ProductEditor,
@@ -42,6 +46,8 @@ function ProductEditor() {
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const variantFileRef = useRef<HTMLInputElement>(null);
+  const videoFileRef = useRef<HTMLInputElement>(null);
+
   const [activeVariantUploadIdx, setActiveVariantUploadIdx] = useState<number | null>(null);
 
   const [draft, setDraft] = useState<Draft | null>(
@@ -51,6 +57,7 @@ function ProductEditor() {
   const [tagText, setTagText] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadingVariant, setUploadingVariant] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [confirm, setConfirm] = useState<null | "save" | "delete" | "discard">(null);
 
   // New variant helper states
@@ -89,6 +96,7 @@ function ProductEditor() {
       options: data.options ?? [],
       variants: data.variants ?? [],
       gift_wrap_price: data.gift_wrap_price ?? 0,
+      video_url: data.video_url ?? null,
     };
     setDraft(d);
     setOriginal(JSON.stringify(d));
@@ -100,8 +108,10 @@ function ProductEditor() {
 
   /** Gallery: primary cover first, then extras. */
   const gallery = draft ? [...new Set([...(draft.image_url ? [draft.image_url] : []), ...(draft.images ?? [])])] : [];
-  const setGallery = (list: string[]) =>
-    setDraft((d) => (d ? { ...d, image_url: list[0] ?? null, images: list.slice(1) } : d));
+  const setGallery = (list: string[]) => {
+    const limited = list.slice(0, MAX_GALLERY_IMAGES);
+    setDraft((d) => (d ? { ...d, image_url: limited[0] ?? null, images: limited.slice(1) } : d));
+  };
 
   const refreshEverywhere = async () => {
     invalidateProductCache();
@@ -142,15 +152,28 @@ function ProductEditor() {
     onError: () => toast.error("Could not delete this product"),
   });
 
+  // Upload main gallery photos with strict count and size limit
   const onFiles = async (files: FileList | null) => {
     if (!files?.length) return;
+    const remainingSlots = MAX_GALLERY_IMAGES - gallery.length;
+    if (remainingSlots <= 0) {
+      toast.error(`Maximum limit reached: only ${MAX_GALLERY_IMAGES} photos allowed per product.`);
+      return;
+    }
+
     setUploading(true);
     try {
       const urls: string[] = [];
-      for (const f of Array.from(files)) {
+      const selectedFiles = Array.from(files).slice(0, remainingSlots);
+
+      if (files.length > remainingSlots) {
+        toast.info(`Only adding ${remainingSlots} photo(s) to stay within the ${MAX_GALLERY_IMAGES}-photo limit.`);
+      }
+
+      for (const f of selectedFiles) {
         if (!f.type.startsWith("image/")) continue;
-        if (f.size > 10 * 1024 * 1024) {
-          toast.error(`${f.name} is larger than 10 MB`);
+        if (f.size > MAX_IMAGE_SIZE_BYTES) {
+          toast.error(`"${f.name}" is larger than 2 MB. Please upload images under 2 MB.`);
           continue;
         }
         const u = await uploadProductImage(f);
@@ -168,19 +191,26 @@ function ProductEditor() {
     }
   };
 
-  // Upload image specifically for a variation
+  // Upload variation image: strictly 1 image per variation & max 2 MB
   const onVariantFile = async (files: FileList | null) => {
     const file = files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error(`Variation image must be under 2 MB.`);
+      if (variantFileRef.current) variantFileRef.current.value = "";
+      return;
+    }
+
     setUploadingVariant(true);
     try {
       const url = await uploadProductImage(file);
       if (activeVariantUploadIdx !== null) {
         updateVariant(activeVariantUploadIdx, { image_url: url });
-        toast.success("Variation image updated");
+        toast.success("Variation photo updated");
       } else {
         setNewVarImage(url);
-        toast.success("Variation image uploaded");
+        toast.success("Variation photo uploaded");
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to upload variation image");
@@ -188,6 +218,32 @@ function ProductEditor() {
       setUploadingVariant(false);
       setActiveVariantUploadIdx(null);
       if (variantFileRef.current) variantFileRef.current.value = "";
+    }
+  };
+
+  // Upload single product video (max 15 MB)
+  const onVideoFile = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file || !file.type.startsWith("video/")) {
+      toast.error("Please select a valid MP4 or WebM video file.");
+      return;
+    }
+
+    if (draft?.video_url) {
+      toast.error("Product already has 1 video. Remove the current video before uploading another.");
+      return;
+    }
+
+    setUploadingVideo(true);
+    try {
+      const url = await uploadProductVideo(file);
+      set("video_url", url);
+      toast.success("Product video uploaded (1/1)");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to upload video");
+    } finally {
+      setUploadingVideo(false);
+      if (videoFileRef.current) videoFileRef.current.value = "";
     }
   };
 
@@ -267,8 +323,59 @@ function ProductEditor() {
   if (!draft) return null;
 
   return (
-    <div className="mx-auto max-w-7xl pb-32">
-      {/* Hidden file input for variant photo upload */}
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 pb-28">
+      {/* Top action header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/admin/products">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              {isNew ? "Add New Book" : draft.title || "Edit Book"}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {isNew ? "Publish a new title to the library" : `Handle: /product/${draft.handle}`}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {!isNew && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirm("delete")}
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" /> Delete
+            </Button>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            disabled={!dirty || save.isPending}
+            onClick={() => setConfirm("save")}
+            className="shadow-sm font-semibold"
+          >
+            {save.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+            Save Changes
+          </Button>
+        </div>
+      </div>
+
+      {/* Hidden file inputs with size & count safety */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => onFiles(e.target.files)}
+      />
       <input
         ref={variantFileRef}
         type="file"
@@ -276,37 +383,16 @@ function ProductEditor() {
         className="hidden"
         onChange={(e) => onVariantFile(e.target.files)}
       />
+      <input
+        ref={videoFileRef}
+        type="file"
+        accept="video/mp4,video/webm"
+        className="hidden"
+        onChange={(e) => onVideoFile(e.target.files)}
+      />
 
-      {/* Top bar */}
-      <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-4 backdrop-blur sm:px-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/admin/products">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-lg font-bold">{isNew ? "New Product" : draft.title || "Untitled Product"}</h1>
-            <p className="text-xs text-muted-foreground">
-              {isNew ? "Create a book or bundle" : `/product/${draft.handle}`}
-            </p>
-          </div>
-        </div>
-
-        {!isNew && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:bg-destructive/10"
-            onClick={() => setConfirm("delete")}
-          >
-            <Trash2 className="mr-1.5 h-4 w-4" /> Delete
-          </Button>
-        )}
-      </div>
-
-      {/* Shopify 2-Column Grid */}
-      <div className="grid grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-12">
+      {/* TWO-COLUMN SHOPIFY-STYLE LAYOUT */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* ================= LEFT MAIN COLUMN (8 cols) ================= */}
         <div className="space-y-6 lg:col-span-8">
           {/* Basic Details */}
@@ -314,110 +400,119 @@ function ProductEditor() {
             <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Basic Details</h2>
             <div className="mt-4 space-y-4">
               <div>
-                <Label htmlFor="title">Product Title *</Label>
+                <Label htmlFor="title">Book Title *</Label>
                 <Input
                   id="title"
                   value={draft.title}
                   onChange={(e) => {
                     const title = e.target.value;
                     set("title", title);
-                    if (isNew && !draft.handle) set("handle", slugify(title));
+                    if (isNew) set("handle", slugify(title));
                   }}
-                  placeholder="e.g. 100 First Words Jumbo Board Book"
-                  className="mt-1.5"
+                  placeholder="e.g. 201 Activity Book for Kids"
+                  className="mt-1.5 font-medium"
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="handle">URL Handle</Label>
+                  <Label htmlFor="handle">URL Handle *</Label>
                   <Input
                     id="handle"
                     value={draft.handle}
                     onChange={(e) => set("handle", slugify(e.target.value))}
-                    placeholder="100-first-words"
-                    className="mt-1.5 font-mono text-xs"
+                    className="mt-1.5 text-xs font-mono"
                   />
                 </div>
-
                 <div>
-                  <Label htmlFor="badge">Promotional Badge</Label>
+                  <Label htmlFor="badge">Badge Pill (Optional)</Label>
                   <Input
                     id="badge"
                     value={draft.badge ?? ""}
                     onChange={(e) => set("badge", e.target.value || null)}
-                    placeholder="Bestseller, New, 20% Off"
+                    placeholder="e.g. Best Seller, New, 20% Off"
                     className="mt-1.5"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Product Description</Label>
                 <Textarea
                   id="description"
-                  rows={6}
+                  rows={4}
                   value={draft.description}
                   onChange={(e) => set("description", e.target.value)}
-                  placeholder="Book summary, contents, learning outcomes..."
+                  placeholder="Describe the content, age recommendations, and paper quality..."
                   className="mt-1.5"
                 />
               </div>
             </div>
           </div>
 
-          {/* Product Variations / Options Builder with Variation Image Upload */}
+          {/* Product Variations (Strictly 1 Photo per Variation) */}
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                   Product Variations & Options
                 </h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Add variations with their own photo, price, and stock levels.
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  1 photo per variation (max 2 MB). Click photo thumbnail to upload.
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" size="sm" className="text-xs" onClick={quickPopulatePages}>
-                  <Sparkles className="mr-1 h-3.5 w-3.5" /> + Pages Template
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={quickPopulatePages}
+                  className="h-7 text-[11px]"
+                >
+                  <Sparkles className="mr-1 h-3 w-3" /> + Pages
                 </Button>
-                <Button type="button" variant="outline" size="sm" className="text-xs" onClick={quickPopulateAges}>
-                  <Sparkles className="mr-1 h-3.5 w-3.5" /> + Ages Template
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={quickPopulateAges}
+                  className="h-7 text-[11px]"
+                >
+                  <Sparkles className="mr-1 h-3 w-3" /> + Ages
                 </Button>
               </div>
             </div>
 
-            {/* Existing variants table */}
+            {/* Existing Variations Table */}
             {draft.variants && draft.variants.length > 0 ? (
-              <div className="mt-5 space-y-3">
-                <div className="overflow-x-auto rounded-xl border border-border">
+              <div className="mt-4 overflow-hidden rounded-xl border border-border">
+                <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-secondary/60 text-muted-foreground">
                       <tr>
-                        <th className="px-3 py-2.5 font-semibold w-14">Image</th>
-                        <th className="px-3 py-2.5 font-semibold">Variation Name</th>
-                        <th className="px-3 py-2.5 font-semibold w-24">Price (₹)</th>
-                        <th className="px-3 py-2.5 font-semibold w-24">Compare (₹)</th>
-                        <th className="px-3 py-2.5 font-semibold w-20">Stock</th>
-                        <th className="px-3 py-2.5 text-right font-semibold w-12">Action</th>
+                        <th className="p-2.5 w-14">Photo</th>
+                        <th className="p-2.5 min-w-[140px]">Variation Name</th>
+                        <th className="p-2.5 w-24">Price (₹)</th>
+                        <th className="p-2.5 w-24">Compare (₹)</th>
+                        <th className="p-2.5 w-20">Stock</th>
+                        <th className="p-2.5 w-10 text-right"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                       {draft.variants.map((v, i) => (
-                        <tr key={v.id || i} className="hover:bg-muted/40">
-                          {/* Variation Image Thumbnail & Upload */}
+                        <tr key={v.id || i} className="hover:bg-secondary/30 transition-colors">
                           <td className="p-2.5">
-                            <div className="relative group h-10 w-10 rounded-lg border border-border overflow-hidden bg-secondary flex items-center justify-center">
+                            <div className="relative h-9 w-9 rounded-lg border border-border bg-card overflow-hidden flex items-center justify-center">
                               {v.image_url ? (
                                 <>
                                   <img src={v.image_url} alt="" className="h-full w-full object-cover" />
                                   <button
                                     type="button"
                                     onClick={() => updateVariant(i, { image_url: null })}
-                                    className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                                    title="Remove image"
+                                    className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                                    title="Remove variation photo"
                                   >
-                                    <X className="h-3.5 w-3.5" />
+                                    <X className="h-3 w-3" />
                                   </button>
                                 </>
                               ) : (
@@ -427,8 +522,8 @@ function ProductEditor() {
                                     setActiveVariantUploadIdx(i);
                                     variantFileRef.current?.click();
                                   }}
-                                  className="h-full w-full flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
-                                  title="Upload variation image"
+                                  className="h-full w-full flex items-center justify-center text-muted-foreground hover:text-foreground"
+                                  title="Upload 1 variation photo (max 2 MB)"
                                 >
                                   {uploadingVariant && activeVariantUploadIdx === i ? (
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -439,13 +534,11 @@ function ProductEditor() {
                               )}
                             </div>
                           </td>
-
-                          <td className="p-2.5">
+                          <td className="p-2.5 font-medium">
                             <Input
                               value={v.title}
                               onChange={(e) => updateVariant(i, { title: e.target.value })}
-                              className="h-8 text-xs font-medium"
-                              placeholder="e.g. 64 Pages"
+                              className="h-8 text-xs"
                             />
                           </td>
                           <td className="p-2.5">
@@ -453,7 +546,7 @@ function ProductEditor() {
                               type="number"
                               value={v.price}
                               onChange={(e) => updateVariant(i, { price: parseFloat(e.target.value) || 0 })}
-                              className="h-8 text-xs"
+                              className="h-8 text-xs font-semibold"
                             />
                           </td>
                           <td className="p-2.5">
@@ -502,7 +595,6 @@ function ProductEditor() {
 
             {/* Add variant row */}
             <div className="mt-4 flex flex-wrap items-end gap-3 rounded-xl bg-secondary/30 p-3">
-              {/* Optional image picker for new variant */}
               <div className="flex flex-col gap-1">
                 <Label className="text-[11px] text-muted-foreground">Photo</Label>
                 <div className="relative h-9 w-9 rounded-lg border border-border bg-card overflow-hidden flex items-center justify-center">
@@ -525,7 +617,7 @@ function ProductEditor() {
                         variantFileRef.current?.click();
                       }}
                       className="h-full w-full flex items-center justify-center text-muted-foreground hover:text-foreground"
-                      title="Upload photo"
+                      title="Upload photo (max 2 MB)"
                     >
                       {uploadingVariant && activeVariantUploadIdx === null ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -542,7 +634,7 @@ function ProductEditor() {
                 <Input
                   value={newVarTitle}
                   onChange={(e) => setNewVarTitle(e.target.value)}
-                  placeholder="e.g. 64 Pages or Age 5-7"
+                  placeholder="e.g. Red, Blue, or 64 Pages"
                   className="mt-1 h-9 text-xs"
                 />
               </div>
@@ -562,7 +654,7 @@ function ProductEditor() {
             </div>
           </div>
 
-          {/* Base Pricing & Stock */}
+          {/* Base Pricing, Gift Wrap & Stock */}
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Base Pricing & Inventory
@@ -590,9 +682,24 @@ function ProductEditor() {
                   step={1}
                   value={draft.compare_at_price ?? ""}
                   onChange={(e) => set("compare_at_price", e.target.value ? parseFloat(e.target.value) : null)}
-                  placeholder="MRP / Original price (optional)"
+                  placeholder="MRP (optional)"
                   className="mt-1.5"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="gift_wrap">Gift Wrap Charge (₹)</Label>
+                <Input
+                  id="gift_wrap"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={draft.gift_wrap_price ?? 0}
+                  onChange={(e) => set("gift_wrap_price", parseFloat(e.target.value) || 0)}
+                  placeholder="0 = Free Gift Wrap"
+                  className="mt-1.5"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">Set 0 for free wrap, or enter custom fee.</p>
               </div>
 
               <div>
@@ -603,36 +710,6 @@ function ProductEditor() {
                   min={0}
                   value={draft.stock}
                   onChange={(e) => set("stock", parseInt(e.target.value) || 0)}
-                  className="mt-1.5"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="gift_wrap_price">Gift Wrap Charge (₹)</Label>
-                <Input
-                  id="gift_wrap_price"
-                  type="number"
-                  min={0}
-                  value={draft.gift_wrap_price ?? 0}
-                  onChange={(e) => set("gift_wrap_price", parseFloat(e.target.value) || 0)}
-                  placeholder="0 for Free Gift Wrap"
-                  className="mt-1.5"
-                />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {draft.gift_wrap_price && draft.gift_wrap_price > 0
-                    ? `Shoppers will be charged ₹${draft.gift_wrap_price} when they check gift wrap.`
-                    : "Gift wrap will be shown as Free on the product page."}
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="low_stock">Low Stock Warning At</Label>
-                <Input
-                  id="low_stock"
-                  type="number"
-                  min={0}
-                  value={draft.low_stock_threshold}
-                  onChange={(e) => set("low_stock_threshold", parseInt(e.target.value) || 5)}
                   className="mt-1.5"
                 />
               </div>
@@ -658,34 +735,30 @@ function ProductEditor() {
             </div>
           </div>
 
-          {/* Product Photos & Covers */}
+          {/* Product Photos (Strictly Max 5 Photos & 2 MB Limit) */}
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                Photos ({gallery.length})
-              </h2>
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  Photos ({gallery.length}/{MAX_GALLERY_IMAGES})
+                </h2>
+                <p className="text-[11px] text-muted-foreground">Max 2 MB per image</p>
+              </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                disabled={uploading}
+                disabled={uploading || gallery.length >= MAX_GALLERY_IMAGES}
                 onClick={() => fileRef.current?.click()}
+                title={gallery.length >= MAX_GALLERY_IMAGES ? "Limit reached (max 5)" : "Upload photo"}
               >
                 {uploading ? (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                 ) : (
                   <ImagePlus className="mr-1.5 h-4 w-4" />
                 )}
-                Upload
+                {gallery.length >= MAX_GALLERY_IMAGES ? "Max 5" : "Upload"}
               </Button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => onFiles(e.target.files)}
-              />
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -735,8 +808,85 @@ function ProductEditor() {
             </div>
             {gallery.length === 0 && (
               <p className="mt-3 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl p-4">
-                No photos yet. Click Upload to add book covers and page previews.
+                No photos yet. Click Upload to add up to 5 book photos.
               </p>
+            )}
+          </div>
+
+          {/* Product Video (Strictly 1 Video Only) */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  Product Video ({draft.video_url ? "1/1" : "0/1"})
+                </h2>
+                <p className="text-[11px] text-muted-foreground">Max 1 video per book</p>
+              </div>
+              {!draft.video_url && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploadingVideo}
+                  onClick={() => videoFileRef.current?.click()}
+                >
+                  {uploadingVideo ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Video className="mr-1.5 h-4 w-4" />
+                  )}
+                  Upload MP4
+                </Button>
+              )}
+            </div>
+
+            {draft.video_url ? (
+              <div className="mt-3 space-y-2">
+                <div className="relative aspect-video rounded-xl overflow-hidden border border-border bg-black flex items-center justify-center">
+                  {draft.video_url.includes("youtube.com") || draft.video_url.includes("youtu.be") ? (
+                    <p className="text-xs text-muted-foreground">YouTube Video Linked</p>
+                  ) : (
+                    <video src={draft.video_url} controls className="h-full w-full object-cover" />
+                  )}
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="destructive"
+                    className="absolute top-2 right-2 h-7 w-7"
+                    title="Remove Video"
+                    onClick={() => set("video_url", null)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate font-mono">{draft.video_url}</p>
+              </div>
+            ) : (
+              <div className="mt-3 space-y-2">
+                <Label className="text-xs">Or paste YouTube / Video link:</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://youtu.be/... or .mp4"
+                    className="h-8 text-xs font-mono"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const val = (e.target as HTMLInputElement).value.trim();
+                        if (val) {
+                          set("video_url", val);
+                          (e.target as HTMLInputElement).value = "";
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const val = e.target.value.trim();
+                      if (val) {
+                        set("video_url", val);
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </div>
+              </div>
             )}
           </div>
 
@@ -761,16 +911,16 @@ function ProductEditor() {
               </div>
 
               <div>
-                <Label>Recommended Age Bracket</Label>
+                <Label>Age Bracket</Label>
                 <Select
                   value={draft.age_tag ?? "none"}
                   onValueChange={(val) => set("age_tag", val === "none" ? null : val)}
                 >
                   <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Select age group" />
+                    <SelectValue placeholder="Select age bracket" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No specific age bracket</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {AGE_GROUPS.map((a) => (
                       <SelectItem key={a.tag} value={a.tag}>
                         {a.label}
@@ -786,15 +936,16 @@ function ProductEditor() {
                   id="tags"
                   value={tagText}
                   onChange={(e) => {
-                    setTagText(e.target.value);
-                    const clean = e.target.value
+                    const text = e.target.value;
+                    setTagText(text);
+                    const parsed = text
                       .split(",")
-                      .map((t) => t.trim())
+                      .map((t) => t.trim().toLowerCase())
                       .filter(Boolean);
-                    set("tags", clean);
+                    set("tags", parsed);
                   }}
-                  placeholder="bestseller, phonics, wipe-clean"
-                  className="mt-1.5"
+                  placeholder="e.g. handwriting, phonics, coloring"
+                  className="mt-1.5 text-xs"
                 />
               </div>
             </div>
@@ -802,55 +953,22 @@ function ProductEditor() {
         </div>
       </div>
 
-      {/* Sticky Save Bar */}
-      {dirty && (
-        <aside
-          aria-label="Unsaved changes bar"
-          className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card/95 px-5 py-2.5 shadow-2xl backdrop-blur"
-        >
-          <span className="text-xs font-semibold">Unsaved changes</span>
-          <Button size="sm" variant="ghost" className="rounded-full" onClick={() => setConfirm("discard")}>
-            Discard
-          </Button>
-          <Button size="sm" className="rounded-full" disabled={save.isPending} onClick={() => setConfirm("save")}>
-            {save.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            Save
-          </Button>
-        </aside>
-      )}
-
-      {/* Confirmations */}
+      {/* Confirmation Dialogs */}
       <ConfirmDialog
         open={confirm === "save"}
         onOpenChange={(open) => !open && setConfirm(null)}
-        title="Save changes?"
-        description="This will update the live catalogue on the shop immediately."
-        confirmLabel="Yes, save"
-        cancelLabel="Keep editing"
+        title="Save Changes?"
+        description="This will immediately update the live pricing, media, and inventory across sanabooks.in."
+        confirmLabel="Yes, Save"
         onConfirm={() => draft && save.mutate(draft)}
-      />
-
-      <ConfirmDialog
-        open={confirm === "discard"}
-        onOpenChange={(open) => !open && setConfirm(null)}
-        title="Discard changes?"
-        description="All your unsaved changes will be lost."
-        confirmLabel="Yes, discard"
-        cancelLabel="Continue editing"
-        destructive
-        onConfirm={() => {
-          setDraft(JSON.parse(original));
-          setConfirm(null);
-        }}
       />
 
       <ConfirmDialog
         open={confirm === "delete"}
         onOpenChange={(open) => !open && setConfirm(null)}
-        title="Delete this product?"
-        description="This action cannot be undone. It will remove this product from the storefront."
-        confirmLabel="Yes, delete"
-        cancelLabel="Cancel"
+        title="Delete this book?"
+        description={`Are you sure you want to delete "${draft.title}"? This cannot be undone.`}
+        confirmLabel="Yes, Delete"
         destructive
         onConfirm={() => remove.mutate()}
       />
