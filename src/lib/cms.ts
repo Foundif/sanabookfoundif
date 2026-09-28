@@ -32,6 +32,7 @@ export const emptyProduct: ProductInput = {
   active: true,
   options: [],
   variants: [],
+  gift_wrap_price: 0, // <--- ADD THIS
 };
 
 export async function fetchAdminProducts(): Promise<ProductRow[]> {
@@ -68,12 +69,19 @@ export async function uploadProductImage(file: File): Promise<string> {
 export async function saveProductReturningId(input: ProductInput & { id?: string }) {
   const { id, ...payload } = input;
   if (id) {
-    const { error } = await supabase.from("products").update(payload as any).eq("id", id);
+    const { error } = await supabase
+      .from("products")
+      .update(payload as any)
+      .eq("id", id);
     if (error) throw error;
     invalidateProductCache();
     return id;
   }
-  const { data, error } = await supabase.from("products").insert(payload as any).select("id").single();
+  const { data, error } = await supabase
+    .from("products")
+    .insert(payload as any)
+    .select("id")
+    .single();
   if (error) throw error;
   invalidateProductCache();
   return data.id as string;
@@ -82,7 +90,10 @@ export async function saveProductReturningId(input: ProductInput & { id?: string
 export async function saveProduct(input: ProductInput & { id?: string }) {
   const payload = { ...input };
   if (input.id) {
-    const { error } = await supabase.from("products").update(payload as any).eq("id", input.id);
+    const { error } = await supabase
+      .from("products")
+      .update(payload as any)
+      .eq("id", input.id);
     if (error) throw error;
   } else {
     const { error } = await supabase.from("products").insert(payload as any);
@@ -114,19 +125,16 @@ export interface CmsBlockRow {
 }
 
 export async function fetchCmsBlocks(): Promise<CmsBlockRow[]> {
-  const { data, error } = await supabase
-    .from("cms_blocks")
-    .select("*")
-    .order("sort_order", { ascending: true });
+  const { data, error } = await supabase.from("cms_blocks").select("*").order("sort_order", { ascending: true });
   if (error) throw error;
   return (data ?? []) as CmsBlockRow[];
 }
 
-export async function updateCmsBlock(
-  id: string,
-  fields: Partial<Omit<CmsBlockRow, "id" | "updated_at">>,
-) {
-  const { error } = await supabase.from("cms_blocks").update(fields as never).eq("id", id);
+export async function updateCmsBlock(id: string, fields: Partial<Omit<CmsBlockRow, "id" | "updated_at">>) {
+  const { error } = await supabase
+    .from("cms_blocks")
+    .update(fields as never)
+    .eq("id", id);
   if (error) throw error;
 }
 export const saveCmsBlock = updateCmsBlock;
