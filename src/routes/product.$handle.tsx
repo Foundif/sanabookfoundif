@@ -104,23 +104,6 @@ function ProductDetail() {
   const ageRange = ageTag ? ageTag.replace("age-", "").split("-") : null;
   const rating = productRating(product);
 
-  const finalUnitPrice = parseFloat(variant.price.amount) + (giftWrap && giftWrapFee > 0 ? giftWrapFee : 0);
-  const optionsWithWrap = [
-    ...(variant.selectedOptions || []),
-    ...(giftWrap
-      ? [{ name: "Gift Wrap", value: giftWrapFee > 0 ? `Yes (+${formatINR(giftWrapFee)})` : "Yes (Free)" }]
-      : []),
-  ];
-
-  await addItem({
-    product,
-    variantId: giftWrap && giftWrapFee > 0 ? `${variant.id}-gw` : variant.id,
-    variantTitle: giftWrap && giftWrapFee > 0 ? `${variant.title} (Gift Wrapped)` : variant.title,
-    price: { amount: String(finalUnitPrice), currencyCode: "INR" },
-    quantity: 1,
-    selectedOptions: optionsWithWrap,
-  });
-
   const giftWrapFee = Number(node.gift_wrap_price ?? 0);
 
   const add = async () => {
