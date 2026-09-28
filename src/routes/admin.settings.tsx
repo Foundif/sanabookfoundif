@@ -138,7 +138,7 @@ function AdminSettings() {
         maintenance_message: message.trim(),
         maintenance_ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         show_countdown: showCountdown,
-        header_notices: lines,
+        header_notices: parsedNotices,
         header_notice_enabled: noticeEnabled,
         free_shipping_threshold: Number(freeThreshold) || 499,
         standard_shipping_charge: Number(standardCharge) || 49,
