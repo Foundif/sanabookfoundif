@@ -71,7 +71,7 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
           compareAtPrice: v.compare_at_price ? { amount: String(v.compare_at_price), currencyCode: "INR" } : null,
           availableForSale: v.available_for_sale ?? (v.stock !== undefined ? v.stock > 0 : true),
           selectedOptions: v.selected_options || [{ name: "Option", value: v.title }],
-          image: v.image_url ? { url: v.image_url, altText: v.title } : undefined,
+          ...(v.image_url ? { image: { url: v.image_url, altText: v.title } } : {}),
         },
       }))
     : [
