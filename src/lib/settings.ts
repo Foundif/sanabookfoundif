@@ -20,7 +20,10 @@ export interface SiteSettings {
   free_shipping_threshold?: number;
   standard_shipping_charge?: number;
   express_shipping_charge?: number;
+  meta_pixel_id?: string | null;
+  meta_pixel_enabled?: boolean;
 }
+
 
 const FALLBACK_SETTINGS: SiteSettings = {
   id: "81d51d36-0522-4eb1-bf24-f552d7c916f5",
@@ -61,7 +64,10 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       header_notice_enabled: s.header_notice_enabled ?? true,
       free_shipping_threshold: Number(s.free_shipping_threshold ?? 499),
       standard_shipping_charge: Number(s.standard_shipping_charge ?? 49),
-      express_shipping_charge: Number(s.express_shipping_charge ?? 99),
+      express_shipping_charge: Number(s.express_shipping_charge ?? 99
+                                           meta_pixel_id: s.meta_pixel_id || "2371989856885975",
+      meta_pixel_enabled: s.meta_pixel_enabled ?? true,
+
     };
     lastFetchTime = now;
     return cachedSettings;
