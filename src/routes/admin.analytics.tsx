@@ -64,7 +64,8 @@ function AnalyticsPage() {
 
   const savePixel = useMutation({
     mutationFn: async () => {
-      await saveSiteSettings({
+      if (!settings?.id) return;
+      await saveSiteSettings(settings.id, {
         meta_pixel_id: pixelId.trim(),
         meta_pixel_enabled: pixelEnabled,
       });
