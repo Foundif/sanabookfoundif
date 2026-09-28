@@ -1,51 +1,127 @@
-/** Admin data layer: product CRUD and editable page content (CMS blocks). */
 import { supabase } from "@/integrations/supabase/client";
-import {
-  invalidateProductCache,
-  type AdminProductRow,
-  type ProductOption,
-  type ProductVariantItem,
-} from "@/lib/catalog";
+import { invalidateProductCache } from "./catalog";
 
-export type { ProductOption, ProductVariantItem } from "@/lib/catalog";
+export interface ProductInput {
+  title: string;
+  handle: string;
+  description: string;
+  price: number;
+  compare_at_price: number | null;
+  product_type: string;
+  active: boolean;
+  featured: boolean;
+  sort_order: number;
+  stock?: number;
+  low_stock_threshold?: number;
+  image_url: string | null;
+  gallery: string[];
+  tags: string[];
+  options?: Array<{ name: string; values: string[] }>;
+  variants?: Array<{
+    id: string;
+    title: string;
+    price: number;
+    compare_at_price?: number | null;
+    stock: number;
+    image_url?: string | null;
+    selected_options?: Array<{ name: string; value: string }>;
+  }>;
+  gift_wrap_price?: number;
+  video_url?: string | null;
+}
 
-export type ProductRow = AdminProductRow & {
+export interface ProductRow extends ProductInput {
+  id: string;
   created_at: string;
   updated_at: string;
-};
+}
 
-export type ProductInput = Omit<AdminProductRow, "id">;
 export const emptyProduct: ProductInput = {
-  handle: "",
   title: "",
+  handle: "",
   description: "",
-  product_type: "English Learning",
-  tags: [],
-  age_tag: "age-3-5",
   price: 0,
   compare_at_price: null,
-  image_url: null,
-  images: [],
-  badge: null,
-  sort_order: 0,
+  product_type: "Activity Books",
   active: true,
-  options: [],
+  featured: false,
+  sort_order: 100,
+  stock: 25,
+  low_stock_threshold: 5,
+  image_url: null,
+  gallery: [],
+  tags: ["age-3-5"],
+  options: [{ name: "Format", values: ["Paperback"] }],
   variants: [],
   gift_wrap_price: 0,
   video_url: null,
 };
 
-/** Uploads a short product flip-through video (strictly max 15 MB) */
+/** Browser-side image compression: downscales large photos and compresses to JPEG ~150KB */
+export async function compressImage(file: File, maxDim = 1200, quality = 0.82): Promise<File> {
+  // If not an image, return raw
+  if (!file.type.startsWith("image/")) return file;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const compressed = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          });
+          resolve(compressed);
+        },
+        "image/jpeg",
+        quality,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
+}
+
+/** Uploads product video with a strict 10 MB limit */
 export async function uploadProductVideo(file: File): Promise<string> {
-  const MAX_VIDEO_SIZE = 15 * 1024 * 1024; // 15 MB
-  if (file.size > MAX_VIDEO_SIZE) {
-    throw new Error("Video file exceeds the 15 MB limit. Please compress or link via YouTube/Vimeo.");
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Video is too large. Please upload an MP4/WebM video under 10 MB.");
   }
   const ext = file.name.split(".").pop()?.toLowerCase() || "mp4";
   const path = `videos/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("product-images")
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, file, { contentType: file.type || "video/mp4", upsert: false });
   if (error) throw error;
   const { data, error: signError } = await supabase.storage
     .from("product-images")
@@ -70,13 +146,14 @@ export async function fetchAdminProduct(id: string) {
   return data as unknown as (ProductRow & { stock: number; low_stock_threshold: number }) | null;
 }
 
-/** Uploads a cover photo to private storage and returns a long-lived link. */
+/** Auto-compresses and uploads a product photo */
 export async function uploadProductImage(file: File): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const optimizedFile = await compressImage(file, 1200, 0.82);
+  const ext = optimizedFile.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("product-images")
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, optimizedFile, { contentType: optimizedFile.type, upsert: false });
   if (error) throw error;
   const { data, error: signError } = await supabase.storage
     .from("product-images")
