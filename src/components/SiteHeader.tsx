@@ -238,6 +238,31 @@ export function SiteHeader() {
           </div>
         </div>
       </div>
+    
+
+        {/* Mobile Search Bar (visible on screens < 768px) */}
+        <div className="border-t border-border/40 bg-surface/50 px-4 py-2 md:hidden">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (query.trim()) {
+                navigate({ to: "/shop", search: { q: query.trim() } });
+              }
+            }}
+            className="relative w-full"
+          >
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search books, phonics, bundles..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-8 w-full rounded-full bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground/80 focus-visible:ring-1"
+            />
+          </form>
+        </div>
+      </div>
+
     </header>
   );
 }
