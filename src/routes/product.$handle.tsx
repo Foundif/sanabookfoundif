@@ -1,4 +1,5 @@
 import { ENQUIRY_ONLY_HANDLES, openEnquiry } from "@/lib/contact-info";
+import { Label } from "@/components/ui/label";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -350,7 +351,7 @@ function ProductDetail() {
           </div>
 
           <div className="mt-6">
-            <ShippingEstimator />
+            <ShippingEstimator subtotal={parseFloat(price)} />
           </div>
         </div>
       </div>
