@@ -435,6 +435,7 @@ export type Database = {
           compare_at_price: number | null
           created_at: string
           description: string
+          gift_wrap_price: number | null
           handle: string
           id: string
           image_url: string | null
@@ -457,6 +458,7 @@ export type Database = {
           compare_at_price?: number | null
           created_at?: string
           description?: string
+          gift_wrap_price?: number | null
           handle: string
           id?: string
           image_url?: string | null
@@ -479,6 +481,7 @@ export type Database = {
           compare_at_price?: number | null
           created_at?: string
           description?: string
+          gift_wrap_price?: number | null
           handle?: string
           id?: string
           image_url?: string | null
@@ -559,6 +562,8 @@ export type Database = {
       site_settings: {
         Row: {
           created_at: string
+          express_shipping_charge: number | null
+          free_shipping_threshold: number | null
           header_notice_enabled: boolean | null
           header_notices: string[] | null
           id: string
@@ -571,10 +576,13 @@ export type Database = {
           order_notify_email: string | null
           show_countdown: boolean
           singleton: boolean
+          standard_shipping_charge: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          express_shipping_charge?: number | null
+          free_shipping_threshold?: number | null
           header_notice_enabled?: boolean | null
           header_notices?: string[] | null
           id?: string
@@ -587,10 +595,13 @@ export type Database = {
           order_notify_email?: string | null
           show_countdown?: boolean
           singleton?: boolean
+          standard_shipping_charge?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          express_shipping_charge?: number | null
+          free_shipping_threshold?: number | null
           header_notice_enabled?: boolean | null
           header_notices?: string[] | null
           id?: string
@@ -603,6 +614,7 @@ export type Database = {
           order_notify_email?: string | null
           show_countdown?: boolean
           singleton?: boolean
+          standard_shipping_charge?: number | null
           updated_at?: string
         }
         Relationships: []
