@@ -15,8 +15,6 @@ import { formatINR, productRating } from "@/lib/shopify";
 import { fetchProductByHandle, fetchProducts } from "@/lib/catalog";
 import { useCartStore } from "@/stores/cartStore";
 
-const LANGUAGES = ["English", "Hindi", "Bilingual"] as const;
-
 export const Route = createFileRoute("/product/$handle")({
   head: ({ params }) => {
     const name = params.handle
@@ -48,8 +46,6 @@ function ProductDetail() {
   const getCheckoutUrl = useCartStore((s) => s.getCheckoutUrl);
   const [activeImage, setActiveImage] = useState(0);
   const [variantIndex, setVariantIndex] = useState(0);
-  const [childAge, setChildAge] = useState(4);
-  const [language, setLanguage] = useState<string>("English");
   const [giftWrap, setGiftWrap] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
 
@@ -143,7 +139,21 @@ function ProductDetail() {
   const handleSelectVariant = (idx: number) => {
     setVariantIndex(idx);
     setShowVideo(false);
-    setActiveImage(0);
+
+    const variantNode = variants[idx]?.node as unknown as {
+      image?: { url?: string };
+      images?: string[];
+    };
+
+    const variantImageUrl =
+      variantNode?.image?.url ?? (Array.isArray(variantNode?.images) ? variantNode.images[0] : undefined);
+
+    if (variantImageUrl) {
+      const imageIndex = displayImages.findIndex((image) => image.node.url === variantImageUrl);
+      setActiveImage(imageIndex >= 0 ? imageIndex : 0);
+    } else {
+      setActiveImage(0);
+    }
   };
 
   const add = async () => {
@@ -246,7 +256,8 @@ function ProductDetail() {
           <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {displayImages.map((img, i) => (
               <button
-                key={img.node.url}
+                key={`${img.node.url}-${i}`}
+                type="button"
                 onClick={() => {
                   setShowVideo(false);
                   setActiveImage(i);
@@ -262,6 +273,7 @@ function ProductDetail() {
             {/* Video preview thumb */}
             {videoUrl && (
               <button
+                type="button"
                 onClick={() => setShowVideo(true)}
                 className={`h-20 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-secondary flex flex-col items-center justify-center gap-1 transition-colors ${
                   showVideo
@@ -323,6 +335,7 @@ function ProductDetail() {
                 {variants.map((v, i) => (
                   <button
                     key={v.node.id}
+                    type="button"
                     onClick={() => handleSelectVariant(i)}
                     className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
                       i === variantIndex
