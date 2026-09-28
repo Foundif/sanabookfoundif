@@ -45,9 +45,20 @@ export interface AdminProductRow {
   active: boolean;
   options?: ProductOption[];
   variants?: ProductVariantItem[];
+  gift_wrap_price?: number | null; // <--- ADD THIS
 }
 
 export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
+  const prod: any = {
+    node: {
+      id: `db:${row.id}`,
+      title: row.title,
+      // ... existing fields
+    },
+  };
+  prod.node.gift_wrap_price = row.gift_wrap_price ?? 0;
+  return prod as ShopifyProduct;
+
   const tags = [...new Set([...(row.tags ?? []), ...(row.age_tag ? [row.age_tag] : [])])];
   const gallery = [...new Set([...(row.image_url ? [row.image_url] : []), ...(row.images ?? [])])].filter(Boolean);
 
