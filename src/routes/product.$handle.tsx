@@ -118,32 +118,6 @@ function ProductDetail() {
   const giftWrapFee = Number(node.gift_wrap_price ?? 0);
   const videoUrl = node.video_url;
 
-  // Build the dynamic gallery: Selected variation's photos come first, followed by general photos
-  const displayImages = useMemo(() => {
-    const baseImages = node.images.edges;
-    const variantNode = variants[variantIndex]?.node;
-    const varImages: string[] = [];
-
-    if (variantNode) {
-      const anyVar = variantNode as unknown as { images?: string[]; image?: { url: string } };
-      if (Array.isArray(anyVar.images) && anyVar.images.length > 0) {
-        varImages.push(...anyVar.images);
-      } else if (anyVar.image?.url) {
-        varImages.push(anyVar.image.url);
-      }
-    }
-
-    if (varImages.length > 0) {
-      const combined = [
-        ...varImages.map((url) => ({ node: { url, altText: variantNode?.title ?? node.title } })),
-        ...baseImages.filter((b) => !varImages.includes(b.node.url)),
-      ];
-      return combined;
-    }
-
-    return baseImages;
-  }, [node.images.edges, variants, variantIndex, node.title]);
-
   // When parent taps a variation pill, switch to variation photo if available
   const handleSelectVariant = (idx: number) => {
     setVariantIndex(idx);
