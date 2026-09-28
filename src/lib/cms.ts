@@ -15,7 +15,6 @@ export type ProductRow = AdminProductRow & {
 };
 
 export type ProductInput = Omit<AdminProductRow, "id">;
-
 export const emptyProduct: ProductInput = {
   handle: "",
   title: "",
@@ -32,8 +31,28 @@ export const emptyProduct: ProductInput = {
   active: true,
   options: [],
   variants: [],
-  gift_wrap_price: 0, // <--- ADD THIS
+  gift_wrap_price: 0,
+  video_url: null,
 };
+
+/** Uploads a short product flip-through video (strictly max 15 MB) */
+export async function uploadProductVideo(file: File): Promise<string> {
+  const MAX_VIDEO_SIZE = 15 * 1024 * 1024; // 15 MB
+  if (file.size > MAX_VIDEO_SIZE) {
+    throw new Error("Video file exceeds the 15 MB limit. Please compress or link via YouTube/Vimeo.");
+  }
+  const ext = file.name.split(".").pop()?.toLowerCase() || "mp4";
+  const path = `videos/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("product-images")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  const { data, error: signError } = await supabase.storage
+    .from("product-images")
+    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+  if (signError || !data) throw signError ?? new Error("Could not generate video link");
+  return data.signedUrl;
+}
 
 export async function fetchAdminProducts(): Promise<ProductRow[]> {
   const { data, error } = await supabase
