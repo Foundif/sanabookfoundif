@@ -79,14 +79,19 @@ export async function saveSiteSettings(id: string, patch: Partial<Omit<SiteSetti
   cachedSettings = null; // Invalidate cache immediately
 }
 
-export function maintenanceActive(settings: SiteSettings, now = new Date()): boolean {
-  if (!settings.maintenance_enabled) return false;
+export function maintenanceActive(settings?: SiteSettings | null, now: Date | number = new Date()): boolean {
+  if (!settings || !settings.maintenance_enabled) return false;
   if (!settings.maintenance_ends_at) return true;
-  return new Date(settings.maintenance_ends_at).getTime() > now.getTime();
+  const nowMs = typeof now === "number" ? now : now.getTime();
+  return new Date(settings.maintenance_ends_at).getTime() > nowMs;
 }
 
-export function countdownParts(targetIso: string, now = new Date()) {
-  const ms = Math.max(0, new Date(targetIso).getTime() - now.getTime());
+export function countdownParts(targetIso?: string | null, now: Date | number = new Date()) {
+  if (!targetIso) {
+    return { ms: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+  const nowMs = typeof now === "number" ? now : now.getTime();
+  const ms = Math.max(0, new Date(targetIso).getTime() - nowMs);
   const seconds = Math.floor((ms / 1000) % 60);
   const minutes = Math.floor((ms / (1000 * 60)) % 60);
   const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);

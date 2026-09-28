@@ -2,16 +2,7 @@ import { ENQUIRY_ONLY_HANDLES, openEnquiry } from "@/lib/contact-info";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import {
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  Gift,
-  Loader2,
-  RotateCcw,
-  ShoppingCart,
-  Truck,
-} from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Gift, Loader2, RotateCcw, ShoppingCart, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +15,7 @@ import { fetchProductByHandle, fetchProducts } from "@/lib/catalog";
 import { useCartStore } from "@/stores/cartStore";
 
 const LANGUAGES = ["English", "Hindi", "Bilingual"] as const;
-
+const giftWrapFee = Number((node as any).gift_wrap_price ?? 0);
 
 export const Route = createFileRoute("/product/$handle")({
   head: ({ params }) => {
@@ -93,9 +84,7 @@ function ProductDetail() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <h1 className="text-2xl font-bold">We couldn't find that book</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          It may have sold out or moved to a different shelf.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">It may have sold out or moved to a different shelf.</p>
         <Button className="mt-6" asChild>
           <Link to="/shop">Back to the library</Link>
         </Button>
@@ -116,7 +105,22 @@ function ProductDetail() {
   const ageRange = ageTag ? ageTag.replace("age-", "").split("-") : null;
   const rating = productRating(product);
 
+  const finalUnitPrice = parseFloat(variant.price.amount) + (giftWrap && giftWrapFee > 0 ? giftWrapFee : 0);
+  const optionsWithWrap = [
+    ...(variant.selectedOptions || []),
+    ...(giftWrap
+      ? [{ name: "Gift Wrap", value: giftWrapFee > 0 ? `Yes (+${formatINR(giftWrapFee)})` : "Yes (Free)" }]
+      : []),
+  ];
 
+  await addItem({
+    product,
+    variantId: giftWrap && giftWrapFee > 0 ? `${variant.id}-gw` : variant.id,
+    variantTitle: giftWrap && giftWrapFee > 0 ? `${variant.title} (Gift Wrapped)` : variant.title,
+    price: { amount: String(finalUnitPrice), currencyCode: "INR" },
+    quantity: 1,
+    selectedOptions: optionsWithWrap,
+  });
 
   const add = async () => {
     if (ENQUIRY_ONLY_HANDLES.includes(handle)) {
@@ -175,9 +179,7 @@ function ProductDetail() {
             {images.length > 1 && (
               <>
                 <button
-                  onClick={() =>
-                    setActiveImage((i) => (i - 1 + images.length) % images.length)
-                  }
+                  onClick={() => setActiveImage((i) => (i - 1 + images.length) % images.length)}
                   aria-label="Previous image"
                   className="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-primary shadow-shelf transition-opacity hover:bg-surface"
                 >
@@ -231,90 +233,86 @@ function ProductDetail() {
             <span className="text-3xl font-bold">{formatINR(price)}</span>
             {discount > 0 && compareAt && (
               <>
-                <span className="text-lg text-muted-foreground line-through">
-                  {formatINR(compareAt)}
-                </span>
+                <span className="text-lg text-muted-foreground line-through">{formatINR(compareAt)}</span>
                 <span className="rounded-full bg-saffron px-2.5 py-0.5 text-xs font-bold text-saffron-foreground">
                   Save {discount}%
                 </span>
               </>
             )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Inclusive of all taxes · Free shipping over ₹499
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">Inclusive of all taxes · Free shipping over ₹499</p>
           {rating ? (
             <div className="mt-3 flex items-center gap-2">
               <Stars value={rating.average} />
               <span className="text-xs font-semibold">
-                {rating.average.toFixed(1)} · {rating.count} verified{" "}
-                {rating.count === 1 ? "review" : "reviews"}
+                {rating.average.toFixed(1)} · {rating.count} verified {rating.count === 1 ? "review" : "reviews"}
               </span>
             </div>
           ) : (
             <p className="mt-3 text-xs text-muted-foreground">No reviews yet</p>
           )}
 
-
           {/* Age recommender slider */}
-          {ageRange && (() => {
-            const from = parseInt(ageRange[0] ?? "0");
-            const to = parseInt(ageRange[1] ?? "0");
-            const fits = childAge >= from && childAge <= to;
-            return (
-              <div className="mt-7 rounded-2xl border border-border bg-card p-5 shadow-shelf">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="eyebrow">Right for your child?</p>
-                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-bold">
-                    {childAge}{childAge >= 12 ? "+" : ""} years
-                  </span>
-                </div>
+          {ageRange &&
+            (() => {
+              const from = parseInt(ageRange[0] ?? "0");
+              const to = parseInt(ageRange[1] ?? "0");
+              const fits = childAge >= from && childAge <= to;
+              return (
+                <div className="mt-7 rounded-2xl border border-border bg-card p-5 shadow-shelf">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="eyebrow">Right for your child?</p>
+                    <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-bold">
+                      {childAge}
+                      {childAge >= 12 ? "+" : ""} years
+                    </span>
+                  </div>
 
-                <div className="relative mt-5">
-                  <div className="h-2 w-full rounded-full bg-secondary" />
-                  <div
-                    className="absolute top-0 h-2 rounded-full bg-primary/25"
-                    style={{
-                      left: `${((from - 1) / 11) * 100}%`,
-                      width: `${((to - from) / 11) * 100}%`,
-                    }}
-                  />
-                  <input
-                    type="range"
-                    min={1}
-                    max={12}
-                    step={1}
-                    value={childAge}
-                    onChange={(e) => setChildAge(parseInt(e.target.value))}
-                    aria-label="Your child's age"
-                    className="absolute -top-2 h-6 w-full cursor-pointer appearance-none bg-transparent [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-surface [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-shelf"
-                  />
-                </div>
-                <div className="mt-3 flex justify-between text-[10px] font-semibold text-muted-foreground">
-                  <span>1y</span>
-                  <span>4y</span>
-                  <span>8y</span>
-                  <span>12y+</span>
-                </div>
+                  <div className="relative mt-5">
+                    <div className="h-2 w-full rounded-full bg-secondary" />
+                    <div
+                      className="absolute top-0 h-2 rounded-full bg-primary/25"
+                      style={{
+                        left: `${((from - 1) / 11) * 100}%`,
+                        width: `${((to - from) / 11) * 100}%`,
+                      }}
+                    />
+                    <input
+                      type="range"
+                      min={1}
+                      max={12}
+                      step={1}
+                      value={childAge}
+                      onChange={(e) => setChildAge(parseInt(e.target.value))}
+                      aria-label="Your child's age"
+                      className="absolute -top-2 h-6 w-full cursor-pointer appearance-none bg-transparent [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-surface [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-shelf"
+                    />
+                  </div>
+                  <div className="mt-3 flex justify-between text-[10px] font-semibold text-muted-foreground">
+                    <span>1y</span>
+                    <span>4y</span>
+                    <span>8y</span>
+                    <span>12y+</span>
+                  </div>
 
-                <p
-                  className={`mt-4 flex items-center gap-1.5 text-xs font-bold ${
-                    fits ? "text-leaf" : "text-muted-foreground"
-                  }`}
-                >
-                  <BookOpen className="h-3.5 w-3.5" />
-                  {fits
-                    ? `Great match — best read with ${from}–${to} year olds`
-                    : `Recommended for ${from}–${to} year olds`}
-                </p>
-                {!fits && (
-                  <Button variant="link" className="mt-1 h-auto p-0 text-xs" asChild>
-                    <Link to="/shop">See books for {childAge} year olds</Link>
-                  </Button>
-                )}
-              </div>
-            );
-          })()}
+                  <p
+                    className={`mt-4 flex items-center gap-1.5 text-xs font-bold ${
+                      fits ? "text-leaf" : "text-muted-foreground"
+                    }`}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                    {fits
+                      ? `Great match — best read with ${from}–${to} year olds`
+                      : `Recommended for ${from}–${to} year olds`}
+                  </p>
+                  {!fits && (
+                    <Button variant="link" className="mt-1 h-auto p-0 text-xs" asChild>
+                      <Link to="/shop">See books for {childAge} year olds</Link>
+                    </Button>
+                  )}
+                </div>
+              );
+            })()}
 
           {/* Language */}
           <div className="mt-6">
@@ -337,21 +335,26 @@ function ProductDetail() {
           </div>
 
           {/* Gift wrap */}
-          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-secondary/40 p-4">
+          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-secondary/40 p-4 transition-colors hover:bg-secondary/60">
             <input
               type="checkbox"
               checked={giftWrap}
               onChange={(e) => setGiftWrap(e.target.checked)}
               className="mt-0.5 h-4 w-4 accent-[hsl(var(--primary))]"
             />
-            <span>
-              <span className="flex items-center gap-1.5 text-sm font-bold">
-                <Gift className="h-3.5 w-3.5 text-saffron" /> Add gift wrap — free
-              </span>
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 text-sm font-bold">
+                  <Gift className="h-3.5 w-3.5 text-saffron" /> Add gift wrap
+                </span>
+                <span className={`text-xs font-bold ${giftWrapFee > 0 ? "text-primary" : "text-leaf"}`}>
+                  {giftWrapFee > 0 ? `+${formatINR(giftWrapFee)}` : "Free"}
+                </span>
+              </div>
               <span className="mt-0.5 block text-xs text-muted-foreground">
-                Kraft gift box with ribbon and a hand-written note. Add the note in order comments.
+                Kraft gift box with ribbon and a hand-written note. Add special instructions in checkout notes.
               </span>
-            </span>
+            </div>
           </label>
 
           {/* Variant picker */}
@@ -383,7 +386,8 @@ function ProductDetail() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <ShoppingCart className="mr-2 h-4 w-4" /> {ENQUIRY_ONLY_HANDLES.includes(handle) ? "Enquire on WhatsApp" : "Add to cart"}
+                  <ShoppingCart className="mr-2 h-4 w-4" />{" "}
+                  {ENQUIRY_ONLY_HANDLES.includes(handle) ? "Enquire on WhatsApp" : "Add to cart"}
                 </>
               )}
             </Button>
@@ -402,7 +406,6 @@ function ProductDetail() {
           <div className="mt-6">
             <ShippingEstimator subtotal={parseFloat(price)} />
           </div>
-
 
           <ul className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
@@ -452,7 +455,8 @@ function ProductDetail() {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <ShoppingCart className="mr-2 h-4 w-4" /> {ENQUIRY_ONLY_HANDLES.includes(handle) ? "Enquire on WhatsApp" : "Add to cart"}
+                <ShoppingCart className="mr-2 h-4 w-4" />{" "}
+                {ENQUIRY_ONLY_HANDLES.includes(handle) ? "Enquire on WhatsApp" : "Add to cart"}
               </>
             )}
           </Button>

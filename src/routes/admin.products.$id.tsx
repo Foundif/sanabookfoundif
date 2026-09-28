@@ -88,6 +88,7 @@ function ProductEditor() {
       low_stock_threshold: data.low_stock_threshold ?? 5,
       options: data.options ?? [],
       variants: data.variants ?? [],
+      gift_wrap_price: data.gift_wrap_price ?? 0,
     };
     setDraft(d);
     setOriginal(JSON.stringify(d));
@@ -604,6 +605,24 @@ function ProductEditor() {
                   onChange={(e) => set("stock", parseInt(e.target.value) || 0)}
                   className="mt-1.5"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="gift_wrap_price">Gift Wrap Charge (₹)</Label>
+                <Input
+                  id="gift_wrap_price"
+                  type="number"
+                  min={0}
+                  value={draft.gift_wrap_price ?? 0}
+                  onChange={(e) => set("gift_wrap_price", parseFloat(e.target.value) || 0)}
+                  placeholder="0 for Free Gift Wrap"
+                  className="mt-1.5"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {draft.gift_wrap_price && draft.gift_wrap_price > 0
+                    ? `Shoppers will be charged ₹${draft.gift_wrap_price} when they check gift wrap.`
+                    : "Gift wrap will be shown as Free on the product page."}
+                </p>
               </div>
 
               <div>
