@@ -16,17 +16,18 @@ export interface ProductOption {
   name: string; // e.g. "Pages", "Age Group", "Format"
   values: string[]; // e.g. ["32 Pages", "64 Pages"]
 }
-
 export interface ProductVariantItem {
   id: string;
-  title: string; // e.g. "32 Pages" or "Hardcover • Age 3-5"
+  title: string;
   price: number;
   compare_at_price: number | null;
   stock?: number;
   available_for_sale?: boolean;
   selected_options?: Array<{ name: string; value: string }>;
-  image_url?: string | null; // <--- Add this
+  image_url?: string | null;
+  images?: string[]; // <--- Supports up to 3 photos per variation
 }
+
 export interface AdminProductRow {
   id: string;
   handle: string;

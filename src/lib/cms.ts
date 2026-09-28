@@ -90,6 +90,19 @@ export async function compressImage(file: File, maxDim = 1200, quality = 0.82): 
   });
 }
 
+export async function uploadVariantImage(file: File): Promise<string> {
+  // Auto-compress variation photo down to 800px / ~80KB
+  const compressed = await compressImage(file, 800, 0.8);
+  const ext = compressed.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `variants/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("product-images")
+    .upload(path, compressed, { contentType: compressed.type, upsert: false });
+  if (error) throw error;
+  const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+  return data?.signedUrl || "";
+}
+
 /** Uploads product video with a strict 10 MB limit */
 export async function uploadProductVideo(file: File): Promise<string> {
   if (file.size > 10 * 1024 * 1024) {
