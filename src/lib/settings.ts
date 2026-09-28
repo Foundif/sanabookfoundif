@@ -1,4 +1,4 @@
-/** Store-wide settings: maintenance mode and header announcement notices. */
+/** Store-wide settings: maintenance mode, header notices, and shipping configuration. */
 import { supabase } from "@/integrations/supabase/client";
 
 export const DEFAULT_NOTICES = [
@@ -17,6 +17,9 @@ export interface SiteSettings {
   show_countdown: boolean;
   header_notices?: string[] | null;
   header_notice_enabled?: boolean;
+  free_shipping_threshold?: number;
+  standard_shipping_charge?: number;
+  express_shipping_charge?: number;
 }
 
 const FALLBACK_SETTINGS: SiteSettings = {
@@ -28,61 +31,65 @@ const FALLBACK_SETTINGS: SiteSettings = {
   show_countdown: true,
   header_notices: DEFAULT_NOTICES,
   header_notice_enabled: true,
+  free_shipping_threshold: 499,
+  standard_shipping_charge: 49,
+  express_shipping_charge: 99,
 };
 
-export async function fetchSiteSettings(): Promise<SiteSettings> {
-  // First attempt: fetch all columns including notices
-  const { data, error } = await supabase
-    .from("site_settings")
-    .select(
-      "id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown, header_notices, header_notice_enabled"
-    )
-    .limit(1)
-    .maybeSingle();
+let cachedSettings: SiteSettings | null = null;
+let lastFetchTime = 0;
 
-  if (!error && data) {
-    return data as unknown as SiteSettings;
+export async function fetchSiteSettings(): Promise<SiteSettings> {
+  const now = Date.now();
+  if (cachedSettings && now - lastFetchTime < 60_000) {
+    return cachedSettings;
   }
 
-  // Second attempt fallback: fetch basic columns if custom columns don't exist yet
-  const { data: basicData, error: basicError } = await supabase
-    .from("site_settings")
-    .select("id, maintenance_enabled, maintenance_heading, maintenance_message, maintenance_ends_at, show_countdown")
-    .limit(1)
-    .maybeSingle();
+  // Fetch all columns
+  const { data, error } = await supabase.from("site_settings").select("*").limit(1).maybeSingle();
 
-  if (!basicError && basicData) {
-    return {
-      ...(basicData as unknown as SiteSettings),
-      header_notices: DEFAULT_NOTICES,
-      header_notice_enabled: true,
+  if (!error && data) {
+    const s = data as any;
+    cachedSettings = {
+      id: s.id,
+      maintenance_enabled: !!s.maintenance_enabled,
+      maintenance_heading: s.maintenance_heading || FALLBACK_SETTINGS.maintenance_heading,
+      maintenance_message: s.maintenance_message || FALLBACK_SETTINGS.maintenance_message,
+      maintenance_ends_at: s.maintenance_ends_at || null,
+      show_countdown: s.show_countdown ?? true,
+      header_notices: Array.isArray(s.header_notices) ? s.header_notices : DEFAULT_NOTICES,
+      header_notice_enabled: s.header_notice_enabled ?? true,
+      free_shipping_threshold: Number(s.free_shipping_threshold ?? 499),
+      standard_shipping_charge: Number(s.standard_shipping_charge ?? 49),
+      express_shipping_charge: Number(s.express_shipping_charge ?? 99),
     };
+    lastFetchTime = now;
+    return cachedSettings;
   }
 
   return FALLBACK_SETTINGS;
 }
 
 export async function saveSiteSettings(id: string, patch: Partial<Omit<SiteSettings, "id">>) {
-  const { error } = await supabase.from("site_settings").update(patch as any).eq("id", id);
+  const { error } = await supabase
+    .from("site_settings")
+    .update(patch as any)
+    .eq("id", id);
   if (error) throw error;
+  cachedSettings = null; // Invalidate cache immediately
 }
 
-/** True while maintenance is on and the scheduled end time (if any) has not passed. */
-export function maintenanceActive(s: SiteSettings | null | undefined, now = Date.now()) {
-  if (!s?.maintenance_enabled) return false;
-  if (s.maintenance_ends_at && new Date(s.maintenance_ends_at).getTime() <= now) return false;
-  return true;
+export function maintenanceActive(settings: SiteSettings, now = new Date()): boolean {
+  if (!settings.maintenance_enabled) return false;
+  if (!settings.maintenance_ends_at) return true;
+  return new Date(settings.maintenance_ends_at).getTime() > now.getTime();
 }
 
-export function countdownParts(endsAt: string | null, now = Date.now()) {
-  if (!endsAt) return null;
-  const ms = new Date(endsAt).getTime() - now;
-  if (ms <= 0) return null;
-  const total = Math.floor(ms / 1000);
-  return {
-    days: Math.floor(total / 86400),
-    hours: Math.floor((total % 86400) / 3600),
-    minutes: Math.floor((total % 3600) / 60),
-    seconds: total % 60,
-  };
+export function countdownParts(targetIso: string, now = new Date()) {
+  const ms = Math.max(0, new Date(targetIso).getTime() - now.getTime());
+  const seconds = Math.floor((ms / 1000) % 60);
+  const minutes = Math.floor((ms / (1000 * 60)) % 60);
+  const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+  return { ms, days, hours, minutes, seconds };
 }
