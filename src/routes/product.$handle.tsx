@@ -394,34 +394,7 @@ function ProductDetail() {
           {/* Shipping Pincode Estimator */}
           <ShippingEstimator subtotal={parseFloat(price)} />
 
-          {/* Trust Guarantees */}
-          <div className="grid grid-cols-2 gap-3 border-t border-border pt-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-primary shrink-0" />
-              <span>Fast Courier across India</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <RotateCcw className="h-4 w-4 text-primary shrink-0" />
-              <span>7-Day Easy Replacement</span>
-            </div>
-          </div>
-
-          {/* Book Description */}
-          <div className="border-t border-border pt-6">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Book Details</h2>
-            <div className="mt-3 text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
-              {node.description || "Curated children's book with vibrant illustrations and engaging stories."}
-            </div>
-          </div>
-
-          {/* Frequently Bought Together */}
-          <FrequentlyBoughtTogether currentHandle={handle} />
-
-          {/* Customer Reviews */}
-          <ProductReviews handle={handle} />
-        </div>
-      </div>
-
+        
       {/* Related Books Rail */}
       {relatedItems.length > 0 && (
         <div className="mt-16 border-t border-border pt-12">
