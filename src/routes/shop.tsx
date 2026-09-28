@@ -1,17 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { LayoutGrid, List, Rows3, SlidersHorizontal, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { LayoutGrid, List, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/ProductCard";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { AGE_GROUPS, CATEGORIES } from "@/lib/shopify";
 import { fetchProducts } from "@/lib/catalog";
-
 
 type ShopSearch = { age?: string | undefined; category?: string | undefined; q?: string | undefined };
 
@@ -31,8 +32,7 @@ export const Route = createFileRoute("/shop")({
       { property: "og:title", content: "Shop Children's Books by Age | Sanabooks India" },
       {
         property: "og:description",
-        content:
-          "Parent-friendly filters, clear ₹ pricing and free shipping over ₹499 across India.",
+        content: "Parent-friendly filters, clear ₹ pricing and free shipping over ₹499 across India.",
       },
     ],
   }),
@@ -71,15 +71,19 @@ const VIEWS = [
 
 type ViewId = (typeof VIEWS)[number]["id"];
 
-
 function Shop() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const [searchTerm, setSearchTerm] = useState(search.q ?? "");
   const [prices, setPrices] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [sort, setSort] = useState("featured");
   const [view, setView] = useState<ViewId>("grid-3");
 
+  // Keep local search input synced with search.q URL param
+  useEffect(() => {
+    setSearchTerm(search.q ?? "");
+  }, [search.q]);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products", "shop"],
@@ -92,13 +96,9 @@ function Shop() {
     if (search.category) list = list.filter((p) => p.node.productType === search.category);
     if (search.q) {
       const q = search.q.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.node.title.toLowerCase().includes(q) || p.node.description.toLowerCase().includes(q),
-      );
+      list = list.filter((p) => p.node.title.toLowerCase().includes(q) || p.node.description.toLowerCase().includes(q));
     }
-    if (languages.length)
-      list = list.filter((p) => languages.some((l) => p.node.tags.includes(l)));
+    if (languages.length) list = list.filter((p) => languages.some((l) => p.node.tags.includes(l)));
     if (prices.length) {
       list = list.filter((p) => {
         const price = parseFloat(p.node.priceRange.minVariantPrice.amount);
@@ -109,14 +109,12 @@ function Shop() {
     if (sort === "low")
       sorted.sort(
         (a, b) =>
-          parseFloat(a.node.priceRange.minVariantPrice.amount) -
-          parseFloat(b.node.priceRange.minVariantPrice.amount),
+          parseFloat(a.node.priceRange.minVariantPrice.amount) - parseFloat(b.node.priceRange.minVariantPrice.amount),
       );
     if (sort === "high")
       sorted.sort(
         (a, b) =>
-          parseFloat(b.node.priceRange.minVariantPrice.amount) -
-          parseFloat(a.node.priceRange.minVariantPrice.amount),
+          parseFloat(b.node.priceRange.minVariantPrice.amount) - parseFloat(a.node.priceRange.minVariantPrice.amount),
       );
     if (sort === "title") sorted.sort((a, b) => a.node.title.localeCompare(b.node.title));
     return sorted;
@@ -128,112 +126,173 @@ function Shop() {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
   const activeCount =
-    (search.age ? 1 : 0) + (search.category ? 1 : 0) + prices.length + languages.length;
+    (search.age ? 1 : 0) + (search.category ? 1 : 0) + (search.q ? 1 : 0) + prices.length + languages.length;
 
   const clearAll = () => {
+    setSearchTerm("");
     setPrices([]);
     setLanguages([]);
     navigate({ search: {} });
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate({ search: (prev: ShopSearch) => ({ ...prev, q: searchTerm.trim() || undefined }) });
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    navigate({ search: (prev: ShopSearch) => ({ ...prev, q: undefined }) });
+  };
+
+  const hasBrowseFilters = Boolean(search.age || search.category);
+  const hasRefineFilters = prices.length > 0 || languages.length > 0;
+
   const filterPanel = (
-    <div className="space-y-7">
+    <div className="space-y-4">
+      {/* Search Input inside Filter Sidebar */}
       <div>
-        <h2 className="eyebrow">Age</h2>
-        <div className="mt-3 space-y-1">
-          {AGE_GROUPS.map((a) => (
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search books..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-9 w-full rounded-lg bg-card pl-9 pr-8 text-sm placeholder:text-muted-foreground/70"
+          />
+          {searchTerm && (
             <button
-              key={a.tag}
-              onClick={() =>
-                navigate({
-                  search: (prev: ShopSearch) => ({
-                    ...prev,
-                    age: prev.age === a.tag ? undefined : a.tag,
-                  }),
-                })
-              }
-              className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                search.age === a.tag
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "hover:bg-secondary"
-              }`}
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
             >
-              {a.label}
+              <X className="h-3.5 w-3.5" />
             </button>
-          ))}
-        </div>
+          )}
+        </form>
       </div>
 
-      <div>
-        <h2 className="eyebrow">Category</h2>
-        <div className="mt-3 space-y-1">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c}
-              onClick={() =>
-                navigate({
-                  search: (prev: ShopSearch) => ({
-                    ...prev,
-                    category: prev.category === c ? undefined : c,
-                  }),
-                })
-              }
-              className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                search.category === c
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "hover:bg-secondary"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Two Clean Tabs: Browse vs Refine */}
+      <Tabs defaultValue="browse" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 rounded-lg bg-muted/60 p-1">
+          <TabsTrigger value="browse" className="relative text-xs font-semibold">
+            Browse
+            {hasBrowseFilters && <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+          </TabsTrigger>
+          <TabsTrigger value="refine" className="relative text-xs font-semibold">
+            Refine
+            {hasRefineFilters && <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+          </TabsTrigger>
+        </TabsList>
 
-      <div>
-        <h2 className="eyebrow">Language</h2>
-        <div className="mt-3 space-y-2">
-          {LANGUAGES.map((l) => (
-            <div key={l.tag} className="flex items-center gap-2">
-              <Checkbox
-                id={`lang-${l.tag}`}
-                checked={languages.includes(l.tag)}
-                onCheckedChange={() => toggle(l.tag, languages, setLanguages)}
-              />
-              <Label htmlFor={`lang-${l.tag}`} className="text-sm font-normal">
-                {l.label}
-              </Label>
+        {/* Tab 1: Browse (Age Groups + Categories) */}
+        <TabsContent value="browse" className="mt-4 space-y-5">
+          <div>
+            <h2 className="eyebrow">Age Group</h2>
+            <div className="mt-2.5 space-y-1">
+              {AGE_GROUPS.map((a) => (
+                <button
+                  key={a.tag}
+                  onClick={() =>
+                    navigate({
+                      search: (prev: ShopSearch) => ({
+                        ...prev,
+                        age: prev.age === a.tag ? undefined : a.tag,
+                      }),
+                    })
+                  }
+                  className={`block w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
+                    search.age === a.tag
+                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                      : "hover:bg-secondary text-foreground/90"
+                  }`}
+                >
+                  {a.label}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <div>
-        <h2 className="eyebrow">Price</h2>
-        <div className="mt-3 space-y-2">
-          {PRICE_BANDS.map((b) => (
-            <div key={b.id} className="flex items-center gap-2">
-              <Checkbox
-                id={`price-${b.id}`}
-                checked={prices.includes(b.id)}
-                onCheckedChange={() => toggle(b.id, prices, setPrices)}
-              />
-              <Label htmlFor={`price-${b.id}`} className="text-sm font-normal">
-                {b.label}
-              </Label>
+          <div>
+            <h2 className="eyebrow">Category</h2>
+            <div className="mt-2.5 max-h-64 overflow-y-auto space-y-1 pr-1">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c}
+                  onClick={() =>
+                    navigate({
+                      search: (prev: ShopSearch) => ({
+                        ...prev,
+                        category: prev.category === c ? undefined : c,
+                      }),
+                    })
+                  }
+                  className={`block w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
+                    search.category === c
+                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                      : "hover:bg-secondary text-foreground/90"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </TabsContent>
 
-      <Button variant="outline" className="w-full" onClick={clearAll}>
-        Clear all filters
-      </Button>
+        {/* Tab 2: Refine (Price Bands + Language) */}
+        <TabsContent value="refine" className="mt-4 space-y-5">
+          <div>
+            <h2 className="eyebrow">Price</h2>
+            <div className="mt-2.5 space-y-2">
+              {PRICE_BANDS.map((b) => (
+                <div key={b.id} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`price-${b.id}`}
+                    checked={prices.includes(b.id)}
+                    onCheckedChange={() => toggle(b.id, prices, setPrices)}
+                  />
+                  <Label htmlFor={`price-${b.id}`} className="text-sm font-normal cursor-pointer">
+                    {b.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="eyebrow">Language</h2>
+            <div className="mt-2.5 space-y-2">
+              {LANGUAGES.map((l) => (
+                <div key={l.tag} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`lang-${l.tag}`}
+                    checked={languages.includes(l.tag)}
+                    onCheckedChange={() => toggle(l.tag, languages, setLanguages)}
+                  />
+                  <Label htmlFor={`lang-${l.tag}`} className="text-sm font-normal cursor-pointer">
+                    {l.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Clear Filters Button */}
+      {activeCount > 0 && (
+        <Button variant="outline" size="sm" className="w-full mt-2" onClick={clearAll}>
+          Clear all filters ({activeCount})
+        </Button>
+      )}
     </div>
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <nav className="text-xs text-muted-foreground">
         <Link to="/" className="hover:text-primary">
           Home
@@ -246,7 +305,7 @@ function Shop() {
           <h1 className="text-2xl font-bold sm:text-3xl">
             {search.category ?? (search.age ? "Books by age" : "The whole library")}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             {isLoading ? "Loading books…" : `${filtered.length} books`}
             {search.q ? ` matching “${search.q}”` : ""}
           </p>
@@ -266,15 +325,11 @@ function Shop() {
                 title={v.label}
                 aria-label={v.label}
                 className={`flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
-                  view === v.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary"
+                  view === v.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"
                 }`}
               >
                 <v.icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">
-                  {v.id === "list" ? "List" : v.id.replace("grid-", "")}
-                </span>
+                <span className="hidden sm:inline">{v.id === "list" ? "List" : v.id.replace("grid-", "")}</span>
               </button>
             ))}
           </div>
@@ -295,7 +350,8 @@ function Shop() {
 
       {/* Active filter chips */}
       {activeCount > 0 && (
-        <div className="mt-5 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {search.q && <Chip label={`“${search.q}”`} onClear={clearSearch} />}
           {search.age && (
             <Chip
               label={AGE_GROUPS.find((a) => a.tag === search.age)?.label ?? search.age}
@@ -329,22 +385,22 @@ function Shop() {
       )}
 
       {/* Mobile filter trigger */}
-      <div className="mt-6 lg:hidden">
+      <div className="mt-5 lg:hidden">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" className="w-full rounded-full">
               <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Filters{activeCount > 0 ? ` (${activeCount})` : ""}
+              Search & Filters{activeCount > 0 ? ` (${activeCount})` : ""}
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[86vw] max-w-sm overflow-y-auto p-6">
-            <SheetTitle className="text-base">Filter books</SheetTitle>
-            <div className="mt-6">{filterPanel}</div>
+            <SheetTitle className="text-base">Search & Filter books</SheetTitle>
+            <div className="mt-5">{filterPanel}</div>
           </SheetContent>
         </Sheet>
       </div>
 
-      <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-[240px_1fr] lg:items-start">
+      <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-[250px_1fr] lg:items-start">
         <aside className="hidden lg:sticky lg:top-28 lg:block lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:pb-4">
           {filterPanel}
         </aside>
@@ -353,17 +409,14 @@ function Shop() {
           {isLoading ? (
             <div className={VIEWS.find((v) => v.id === view)!.cls}>
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton
-                  key={i}
-                  className={view === "list" ? "h-40 rounded-xl" : "h-80 rounded-xl sm:h-96"}
-                />
+                <Skeleton key={i} className={view === "list" ? "h-40 rounded-xl" : "h-80 rounded-xl sm:h-96"} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-12 text-center">
               <p className="text-sm font-semibold">No products found.</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Try clearing a filter or browsing the whole library.
+                Try clearing a filter or searching for another keyword.
               </p>
               <Button variant="outline" className="mt-5 rounded-full" onClick={clearAll}>
                 Clear all filters
@@ -372,14 +425,9 @@ function Shop() {
           ) : (
             <div ref={gridRef} className={VIEWS.find((v) => v.id === view)!.cls}>
               {filtered.map((p) => (
-                <ProductCard
-                  key={p.node.id}
-                  product={p}
-                  view={view === "list" ? "list" : "grid"}
-                />
+                <ProductCard key={p.node.id} product={p} view={view === "list" ? "list" : "grid"} />
               ))}
             </div>
-
           )}
         </div>
       </div>
