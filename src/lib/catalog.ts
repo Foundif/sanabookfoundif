@@ -64,22 +64,17 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
   const hasCustomVariants = Array.isArray(row.variants) && row.variants.length > 0;
 
   const variantEdges = hasCustomVariants
-    ? (row.variants ?? []).map((v, idx) => {
-        const varImages = v.images && v.images.length > 0 ? v.images.filter(Boolean) : v.image_url ? [v.image_url] : [];
-        const primaryImg = varImages[0] ?? v.image_url ?? null;
-        return {
-          node: {
-            id: v.id || `db:${row.id}:v-${idx}`,
-            title: v.title,
-            price: { amount: String(v.price), currencyCode: "INR" },
-            compareAtPrice: v.compare_at_price ? { amount: String(v.compare_at_price), currencyCode: "INR" } : null,
-            availableForSale: v.available_for_sale ?? (v.stock !== undefined ? v.stock > 0 : true),
-            selectedOptions: v.selected_options || [{ name: "Option", value: v.title }],
-            ...(primaryImg ? { image: { url: primaryImg, altText: v.title } } : {}),
-            images: varImages,
-          },
-        };
-      })
+    ? (row.variants ?? []).map((v, idx) => ({
+        node: {
+          id: v.id || `db:${row.id}:v-${idx}`,
+          title: v.title,
+          price: { amount: String(v.price), currencyCode: "INR" },
+          compareAtPrice: v.compare_at_price ? { amount: String(v.compare_at_price), currencyCode: "INR" } : null,
+          availableForSale: v.available_for_sale ?? (v.stock !== undefined ? v.stock > 0 : true),
+          selectedOptions: v.selected_options || [{ name: "Option", value: v.title }],
+          ...(v.image_url ? { image: { url: v.image_url, altText: v.title } } : {}),
+        },
+      }))
     : [
         {
           node: {
@@ -89,7 +84,6 @@ export function adminRowToProduct(row: AdminProductRow): ShopifyProduct {
             compareAtPrice: row.compare_at_price ? { amount: String(row.compare_at_price), currencyCode: "INR" } : null,
             availableForSale: true,
             selectedOptions: [{ name: "Format", value: "Default" }],
-            images: [],
           },
         },
       ];
