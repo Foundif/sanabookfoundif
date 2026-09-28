@@ -3,18 +3,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Bell,
-  CheckCircle2,
-  Loader2,
-  Plus,
-  Shield,
-  Trash2,
-  UserCheck,
-  UserPlus,
-  Users,
-  Wrench,
-} from "lucide-react";
+import { Bell, CheckCircle2, Loader2, Plus, Shield, Trash2, UserCheck, UserPlus, Users, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,25 +20,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import {
-  DEFAULT_NOTICES,
-  countdownParts,
-  fetchSiteSettings,
-  saveSiteSettings,
-} from "@/lib/settings";
-import {
-  addTeamMember,
-  listTeamMembers,
-  removeTeamMember,
-} from "@/lib/team.functions";
+import { DEFAULT_NOTICES, countdownParts, fetchSiteSettings, saveSiteSettings } from "@/lib/settings";
+import { addTeamMember, listTeamMembers, removeTeamMember } from "@/lib/team.functions";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/settings")({
@@ -69,6 +43,10 @@ function toLocalInput(iso: string | null) {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+const [freeThreshold, setFreeThreshold] = useState<number>(499);
+const [standardCharge, setStandardCharge] = useState<number>(49);
+const [expressCharge, setExpressCharge] = useState<number>(99);
 
 const PRESETS = [
   { label: "30 minutes", minutes: 30 },
@@ -125,6 +103,10 @@ function AdminSettings() {
 
   useEffect(() => {
     if (!data) return;
+    setFreeThreshold(data.free_shipping_threshold ?? 499);
+    setStandardCharge(data.standard_shipping_charge ?? 49);
+    setExpressCharge(data.express_shipping_charge ?? 99);
+
     setEnabled(data.maintenance_enabled);
     setHeading(data.maintenance_heading);
     setMessage(data.maintenance_message);
@@ -132,10 +114,7 @@ function AdminSettings() {
     setShowCountdown(data.show_countdown);
     setNoticeEnabled(data.header_notice_enabled ?? true);
     setNoticesText(
-      (data.header_notices && data.header_notices.length > 0
-        ? data.header_notices
-        : DEFAULT_NOTICES
-      ).join("\n"),
+      (data.header_notices && data.header_notices.length > 0 ? data.header_notices : DEFAULT_NOTICES).join("\n"),
     );
   }, [data]);
 
@@ -155,12 +134,15 @@ function AdminSettings() {
 
       await saveSiteSettings(data.id, {
         maintenance_enabled: enabled,
-        maintenance_heading: heading.trim() || "We are getting the shelves ready",
+        maintenance_heading: heading.trim(),
         maintenance_message: message.trim(),
         maintenance_ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         show_countdown: showCountdown,
+        header_notices: lines,
         header_notice_enabled: noticeEnabled,
-        header_notices: parsedNotices.length > 0 ? parsedNotices : DEFAULT_NOTICES,
+        free_shipping_threshold: Number(freeThreshold) || 499,
+        standard_shipping_charge: Number(standardCharge) || 49,
+        express_shipping_charge: Number(expressCharge) || 99,
       });
 
       await refetch();
@@ -219,28 +201,30 @@ function AdminSettings() {
     }
   };
 
- if (isLoading) {
-  return (
-    <div className="flex min-h-[40vh] items-center justify-center">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-    </div>
-  );
-}
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-if (!data) {
-  return (
-    <div className="p-8 text-center">
-      <p className="text-sm text-muted-foreground">Unable to load settings.</p>
-      <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-3">
-        Retry
-      </Button>
-    </div>
-  );
-}
-
+  if (!data) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-sm text-muted-foreground">Unable to load settings.</p>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-3">
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   const preview = endsAt ? countdownParts(new Date(endsAt).toISOString(), now) : null;
-  const currentNoticesList = noticesText.split("\n").map((s) => s.trim()).filter(Boolean);
+  const currentNoticesList = noticesText
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   return (
     <div className="grid max-w-4xl gap-8 pb-12">
@@ -256,14 +240,8 @@ if (!data) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {noticeEnabled ? "Visible" : "Hidden"}
-            </span>
-            <Switch
-              checked={noticeEnabled}
-              onCheckedChange={setNoticeEnabled}
-              aria-label="Toggle notice bar"
-            />
+            <span className="text-xs font-semibold text-muted-foreground">{noticeEnabled ? "Visible" : "Hidden"}</span>
+            <Switch checked={noticeEnabled} onCheckedChange={setNoticeEnabled} aria-label="Toggle notice bar" />
           </div>
         </header>
 
@@ -286,9 +264,7 @@ if (!data) {
 
             {/* Live Ticker Preview */}
             <div className="rounded-lg border border-border bg-surface p-3">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Live Preview
-              </p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Live Preview</p>
               <div className="flex flex-wrap items-center gap-2">
                 {currentNoticesList.map((n, i) => (
                   <Badge key={i} variant="secondary" className="gap-1.5 py-1 text-xs">
@@ -317,7 +293,8 @@ if (!data) {
               <Users className="h-5 w-5 text-primary" /> Store Team & Admin Access
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Add multiple administrators or staff members who can sign in at <code className="text-xs bg-muted px-1 py-0.5 rounded">/admin/login</code>.
+              Add multiple administrators or staff members who can sign in at{" "}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">/admin/login</code>.
             </p>
           </div>
 
@@ -367,12 +344,8 @@ if (!data) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">
-                        Store Admin (Full control, settings, products, team)
-                      </SelectItem>
-                      <SelectItem value="staff">
-                        Staff (Orders, inventory, messages — no store settings)
-                      </SelectItem>
+                      <SelectItem value="admin">Store Admin (Full control, settings, products, team)</SelectItem>
+                      <SelectItem value="staff">Staff (Orders, inventory, messages — no store settings)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -453,9 +426,7 @@ if (!data) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {enabled ? "Closed" : "Live"}
-            </span>
+            <span className="text-xs font-semibold text-muted-foreground">{enabled ? "Closed" : "Live"}</span>
             <Switch checked={enabled} onCheckedChange={setEnabled} aria-label="Maintenance mode" />
           </div>
         </header>
@@ -467,22 +438,12 @@ if (!data) {
 
         <div className="grid gap-1.5">
           <Label htmlFor="message">Message to shoppers</Label>
-          <Textarea
-            id="message"
-            rows={2}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
+          <Textarea id="message" rows={2} value={message} onChange={(e) => setMessage(e.target.value)} />
         </div>
 
         <div className="grid gap-1.5">
           <Label htmlFor="endsAt">Back online at (optional)</Label>
-          <Input
-            id="endsAt"
-            type="datetime-local"
-            value={endsAt}
-            onChange={(e) => setEndsAt(e.target.value)}
-          />
+          <Input id="endsAt" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
           <div className="mt-1 flex flex-wrap gap-2">
             {PRESETS.map((p) => (
               <Button
@@ -497,13 +458,7 @@ if (!data) {
               </Button>
             ))}
             {endsAt && (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="rounded-full"
-                onClick={() => setEndsAt("")}
-              >
+              <Button type="button" size="sm" variant="ghost" className="rounded-full" onClick={() => setEndsAt("")}>
                 Clear
               </Button>
             )}
@@ -519,11 +474,7 @@ if (!data) {
                 : "Add a time above to show a live countdown."}
             </p>
           </div>
-          <Switch
-            checked={showCountdown}
-            onCheckedChange={setShowCountdown}
-            aria-label="Show countdown"
-          />
+          <Switch checked={showCountdown} onCheckedChange={setShowCountdown} aria-label="Show countdown" />
         </div>
 
         <div>
