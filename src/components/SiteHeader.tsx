@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Heart, Menu, Search, Sparkles, User } from "lucide-react";
 import logo from "@/assets/sanabooks-logo.png";
@@ -36,6 +36,9 @@ export function SiteHeader() {
   const { user } = useAuth();
   const wishlist = useWishlist();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isShopPage = location.pathname === "/shop";
 
   const { data: settings } = useQuery({
     queryKey: ["site-settings"],
@@ -51,7 +54,6 @@ export function SiteHeader() {
       : ["Free India Shipping on Orders Over ₹499"];
   }, [settings?.header_notices]);
 
-  // Multiply notices per track so each half is wider than ultra-wide displays (eliminates blank gap & glitch)
   const repeatedNotices = useMemo(() => {
     const safeList = notices && notices.length > 0 ? notices : ["Free India Shipping on Orders Over ₹499"];
     const minItems = 12;
@@ -74,7 +76,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-surface">
-      {/* Top Notice Marquee - Seamless Infinite Loop with Calm Speed */}
+      {/* Top Notice Marquee */}
       {showNotices && (
         <div className="group overflow-hidden bg-navy text-navy-foreground select-none">
           <div
@@ -190,7 +192,7 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          {/* Search bar */}
+          {/* Desktop Search bar */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -238,27 +240,29 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {/* Mobile Search Bar (visible on screens < 768px) */}
-        <div className="border-t border-border/40 bg-surface/50 px-4 py-2 md:hidden">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (query.trim()) {
-                navigate({ to: "/shop", search: { q: query.trim() } });
-              }
-            }}
-            className="relative w-full"
-          >
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search books, phonics, bundles..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-8 w-full rounded-full bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground/80 focus-visible:ring-1"
-            />
-          </form>
-        </div>
+        {/* Mobile Search Bar (visible on <768px, but hidden on /shop since it lives in the sidebar filter) */}
+        {!isShopPage && (
+          <div className="border-t border-border/40 bg-surface/50 px-4 py-2 md:hidden">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (query.trim()) {
+                  navigate({ to: "/shop", search: { q: query.trim() } });
+                }
+              }}
+              className="relative w-full"
+            >
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search books, phonics, bundles..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="h-8 w-full rounded-full bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground/80 focus-visible:ring-1"
+              />
+            </form>
+          </div>
+        )}
       </div>
     </header>
   );
