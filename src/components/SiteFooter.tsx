@@ -57,6 +57,11 @@ export function SiteFooter() {
           <h3 className="text-xs font-bold tracking-[0.14em] uppercase opacity-70">Help</h3>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
+              <Link to="/track" search={{ order: undefined }} className="opacity-85 hover:opacity-100">
+                Track your order
+              </Link>
+            </li>
+            <li>
               <Link to="/schools" className="opacity-85 hover:opacity-100">
                 Schools &amp; bulk orders
               </Link>
