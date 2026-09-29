@@ -191,23 +191,25 @@ function ProductEditor() {
     }
   };
 
-  // Upload variation image: strictly 1 image per variation & max 2 MB
+  // Upload variation image: up to 3 photos per variation, auto-compressed
   const onVariantFile = async (files: FileList | null) => {
     const file = files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      toast.error(`Variation image must be under 2 MB.`);
+    if (file.size > MAX_IMAGE_SIZE_BYTES * 5) {
+      toast.error(`Variation image must be under 10 MB.`);
       if (variantFileRef.current) variantFileRef.current.value = "";
       return;
     }
 
     setUploadingVariant(true);
     try {
-      const url = await uploadProductImage(file);
+      const url = await uploadVariantImage(file);
       if (activeVariantUploadIdx !== null) {
-        updateVariant(activeVariantUploadIdx, { image_url: url });
-        toast.success("Variation photo updated");
+        const current = draft?.variants?.[activeVariantUploadIdx];
+        const imgs = [...variantImages(current), url].slice(0, 3);
+        updateVariant(activeVariantUploadIdx, { images: imgs, image_url: imgs[0] ?? null });
+        toast.success("Variation photo added");
       } else {
         setNewVarImage(url);
         toast.success("Variation photo uploaded");
