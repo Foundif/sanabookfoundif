@@ -68,7 +68,7 @@ function ThankYouPage() {
               </p>
             )}
             <p className="mt-4 text-xs text-muted-foreground">
-              A confirmation email has been sent to your email address. We will update you with courier tracking as soon as your parcel ships.
+              A confirmation email has been sent to your email address. To track your order, send this order ID to us on WhatsApp or use the Track Order page.
             </p>
           </div>
         ) : (
@@ -84,6 +84,9 @@ function ThankYouPage() {
               <ShoppingBag className="mr-2 h-4 w-4" />
               Continue Shopping
             </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="rounded-full">
+            <Link to="/track" search={{ order: order || undefined }}>Track Order</Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full">
             <a

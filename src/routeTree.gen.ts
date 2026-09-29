@@ -21,6 +21,7 @@ import { Route as ReadingRoomRouteImport } from './routes/reading-room'
 import { Route as SchoolsRouteImport } from './routes/schools'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ThankYouRouteImport } from './routes/thank-you'
+import { Route as TrackRouteImport } from './routes/track'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
@@ -98,6 +99,11 @@ const ShopRoute = ShopRouteImport.update({
 const ThankYouRoute = ThankYouRouteImport.update({
   id: '/thank-you',
   path: '/thank-you',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
   '/thank-you': typeof ThankYouRoute
+  '/track': typeof TrackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
   '/thank-you': typeof ThankYouRoute
+  '/track': typeof TrackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/schools': typeof SchoolsRoute
   '/shop': typeof ShopRoute
   '/thank-you': typeof ThankYouRoute
+  '/track': typeof TrackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/schools'
     | '/shop'
     | '/thank-you'
+    | '/track'
     | '/admin/analytics'
     | '/admin/content'
     | '/admin/coupons'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/schools'
     | '/shop'
     | '/thank-you'
+    | '/track'
     | '/admin/analytics'
     | '/admin/content'
     | '/admin/coupons'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/schools'
     | '/shop'
     | '/thank-you'
+    | '/track'
     | '/admin/analytics'
     | '/admin/content'
     | '/admin/coupons'
@@ -398,6 +410,7 @@ export interface RootRouteChildren {
   SchoolsRoute: typeof SchoolsRoute
   ShopRoute: typeof ShopRoute
   ThankYouRoute: typeof ThankYouRoute
+  TrackRoute: typeof TrackRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AgeTagRoute: typeof AgeTagRoute
   ProductHandleRoute: typeof ProductHandleRoute
@@ -487,6 +500,13 @@ declare module '@tanstack/react-router' {
       path: '/thank-you'
       fullPath: '/thank-you'
       preLoaderRoute: typeof ThankYouRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -669,6 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   SchoolsRoute: SchoolsRoute,
   ShopRoute: ShopRoute,
   ThankYouRoute: ThankYouRoute,
+  TrackRoute: TrackRoute,
   AdminLoginRoute: AdminLoginRoute,
   AgeTagRoute: AgeTagRoute,
   ProductHandleRoute: ProductHandleRoute,
