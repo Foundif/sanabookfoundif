@@ -20,7 +20,11 @@ import {
   uploadProductVideo,
   type ProductInput,
   type ProductVariantItem,
+  uploadVariantImage,
 } from "@/lib/cms";
+
+const variantImages = (v?: { images?: string[]; image_url?: string | null } | null): string[] =>
+  v ? (v.images && v.images.length ? v.images.filter(Boolean) : v.image_url ? [v.image_url] : []) : [];
 import { AGE_GROUPS, CATEGORIES, invalidateProductCache } from "@/lib/catalog";
 
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB strict
@@ -263,6 +267,7 @@ function ProductEditor() {
       compare_at_price: draft?.compare_at_price ?? null,
       stock: draft?.stock ?? 10,
       image_url: newVarImage,
+      images: newVarImage ? [newVarImage] : [],
     };
     const updated = [...(draft?.variants ?? []), newVariant];
     set("variants", updated);
@@ -492,7 +497,7 @@ function ProductEditor() {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-secondary/60 text-muted-foreground">
                       <tr>
-                        <th className="p-2.5 w-14">Photo</th>
+                        <th className="p-2.5 w-36">Photos (max 3)</th>
                         <th className="p-2.5 min-w-[140px]">Variation Name</th>
                         <th className="p-2.5 w-24">Price (₹)</th>
                         <th className="p-2.5 w-24">Compare (₹)</th>
