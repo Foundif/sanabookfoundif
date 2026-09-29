@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface OrderItemInput {
   product_handle: string;
   product_title: string;
+  variant_title?: string | null;
   image_url: string | null;
   unit_price: number;
   quantity: number;

@@ -69,7 +69,7 @@ export async function sendOrderEmails(orderNumber: string) {
       `Your order ${orderNumber} is confirmed`,
       wrap(
         `Thank you, ${esc(o.full_name)}!`,
-        `We've received your payment for order <strong>${esc(orderNumber)}</strong>. We'll share tracking as soon as it ships. Questions? WhatsApp us at +91 91501 13923.`,
+        `We've received your payment for order <strong>${esc(orderNumber)}</strong>. We'll share tracking as soon as it ships. To track your parcel anytime, send your order ID <strong>${esc(orderNumber)}</strong> to us on WhatsApp at <a href="https://wa.me/919150113923?text=Track%20order%20${encodeURIComponent(orderNumber)}">+91 91501 13923</a>, or visit sanabooks.in/track.`,
       ),
       storeEmail,
     ),
