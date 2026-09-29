@@ -2,7 +2,7 @@ import { ENQUIRY_ONLY_HANDLES, openEnquiry } from "@/lib/contact-info";
 import { Label } from "@/components/ui/label";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BookOpen,
   ChevronLeft,
@@ -118,7 +118,7 @@ function ProductDetail() {
   const videoUrl = node.video_url;
 
   // Build the dynamic gallery: Selected variation's photos come first, followed by general photos
-  const displayImages = useMemo(() => {
+  const displayImages = (() => {
     const baseImages = node.images.edges;
     const variantNode = variants[variantIndex]?.node;
     const varImages: string[] = [];
@@ -141,7 +141,7 @@ function ProductDetail() {
     }
 
     return baseImages;
-  }, [node.images.edges, variants, variantIndex, node.title]);
+  })();
 
   // When a variation is tapped, switch immediately to its photo
   const handleSelectVariant = (idx: number) => {
@@ -297,8 +297,8 @@ function ProductDetail() {
             <h1 className="mt-3 text-2xl font-bold sm:text-3xl">{node.title}</h1>
 
             <div className="mt-2 flex items-center gap-2">
-              <Stars rating={rating.rating} />
-              <span className="text-xs text-muted-foreground">({rating.reviewCount} parent reviews)</span>
+              <Stars value={rating?.average ?? 0} />
+              <span className="text-xs text-muted-foreground">({rating?.count ?? 0} parent reviews)</span>
             </div>
 
             <div className="mt-4 flex items-baseline gap-3">
@@ -415,17 +415,17 @@ function ProductDetail() {
           </div>
 
           {/* Frequently Bought Together */}
-          <FrequentlyBoughtTogether currentHandle={handle} />
+          <FrequentlyBoughtTogether product={product} companions={relatedItems.slice(0, 2)} />
 
           {/* Customer Reviews */}
-          <ProductReviews handle={handle} />
+          <ProductReviews product={product} />
         </div>
       </div>
 
       {/* Related Books Rail */}
       {relatedItems.length > 0 && (
         <div className="mt-16 border-t border-border pt-12">
-          <ProductRail title="You May Also Like" items={relatedItems} />
+          <ProductRail title="You May Also Like" products={relatedItems} />
         </div>
       )}
     </div>
