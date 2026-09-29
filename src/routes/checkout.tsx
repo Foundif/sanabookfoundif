@@ -134,6 +134,7 @@ function CheckoutPage() {
     items: items.map((i) => ({
       product_handle: i.product.node.handle,
       product_title: i.product.node.title,
+      variant_title: i.variantTitle && i.variantTitle !== "Default" ? i.variantTitle : null,
       image_url: i.product.node.images?.edges?.[0]?.node?.url ?? null,
       unit_price: parseFloat(i.price.amount),
       quantity: i.quantity,

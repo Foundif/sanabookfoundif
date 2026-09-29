@@ -273,6 +273,7 @@ export type Database = {
           product_title: string
           quantity: number
           unit_price: number
+          variant_title: string | null
         }
         Insert: {
           created_at?: string
@@ -283,6 +284,7 @@ export type Database = {
           product_title: string
           quantity: number
           unit_price: number
+          variant_title?: string | null
         }
         Update: {
           created_at?: string
@@ -293,6 +295,7 @@ export type Database = {
           product_title?: string
           quantity?: number
           unit_price?: number
+          variant_title?: string | null
         }
         Relationships: [
           {
@@ -310,6 +313,7 @@ export type Database = {
           city: string
           cod_fee: number
           coupon_code: string | null
+          courier_name: string | null
           created_at: string
           discount: number
           email: string
@@ -329,6 +333,7 @@ export type Database = {
           status: string
           subtotal: number
           total: number
+          tracking_number: string | null
           updated_at: string
           user_id: string | null
         }
@@ -337,6 +342,7 @@ export type Database = {
           city: string
           cod_fee?: number
           coupon_code?: string | null
+          courier_name?: string | null
           created_at?: string
           discount?: number
           email: string
@@ -356,6 +362,7 @@ export type Database = {
           status?: string
           subtotal?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -364,6 +371,7 @@ export type Database = {
           city?: string
           cod_fee?: number
           coupon_code?: string | null
+          courier_name?: string | null
           created_at?: string
           discount?: number
           email?: string
@@ -383,6 +391,7 @@ export type Database = {
           status?: string
           subtotal?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -687,6 +696,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      track_order: {
+        Args: { _order_number: string; _phone: string }
+        Returns: Json
       }
     }
     Enums: {

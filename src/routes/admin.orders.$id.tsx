@@ -2,6 +2,10 @@ import { PaymentBadge } from "@/components/PaymentBadge";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,8 +26,8 @@ export const Route = createFileRoute("/admin/orders/$id")({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 py-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-semibold">{value}</span>
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words text-right font-semibold">{value}</span>
     </div>
   );
 }
@@ -90,8 +94,8 @@ function AdminOrderDetail() {
         </Select>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-2xl border border-border bg-surface p-5">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="min-w-0 rounded-2xl border border-border bg-surface p-5">
           <h3 className="text-base font-bold">Items</h3>
           <ul className="mt-4 divide-y divide-border">
             {data.items.map((item) => (
@@ -101,16 +105,19 @@ function AdminOrderDetail() {
                     src={item.image_url}
                     alt=""
                     loading="lazy"
-                    className="h-16 w-12 rounded-md object-cover"
+                    className="h-16 w-12 shrink-0 rounded-md object-cover"
                   />
                 ) : null}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{item.product_title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.product_handle} · Qty {item.quantity}
-                  </p>
+                  <p className="line-clamp-2 break-words text-sm font-semibold">{item.product_title}</p>
+                  {(item as { variant_title?: string | null }).variant_title ? (
+                    <p className="mt-0.5 inline-block rounded bg-secondary px-1.5 py-0.5 text-xs font-medium">
+                      Variation: {(item as { variant_title?: string | null }).variant_title}
+                    </p>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>
                 </div>
-                <span className="text-sm font-bold">
+                <span className="shrink-0 text-sm font-bold">
                   {formatINR(Number(item.unit_price) * item.quantity)}
                 </span>
               </li>
@@ -139,7 +146,8 @@ function AdminOrderDetail() {
           </div>
         </section>
 
-        <section className="space-y-4">
+        <section className="min-w-0 space-y-4">
+          <TrackingCard id={id} courier={(data as { courier_name?: string | null }).courier_name ?? ""} tracking={(data as { tracking_number?: string | null }).tracking_number ?? ""} />
           <div className="rounded-2xl border border-border bg-surface p-5">
             <h3 className="text-base font-bold">Customer</h3>
             <div className="mt-3">
@@ -150,7 +158,7 @@ function AdminOrderDetail() {
           </div>
           <div className="rounded-2xl border border-border bg-surface p-5">
             <h3 className="text-base font-bold">Delivery</h3>
-            <p className="mt-3 text-sm whitespace-pre-line">{data.address}</p>
+            <p className="mt-3 break-words text-sm whitespace-pre-line">{data.address}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {data.city}, {data.state} {data.pincode ?? ""}
             </p>
@@ -162,10 +170,41 @@ function AdminOrderDetail() {
           {data.notes ? (
             <div className="rounded-2xl border border-border bg-surface p-5">
               <h3 className="text-base font-bold">Notes</h3>
-              <p className="mt-2 text-sm whitespace-pre-line">{data.notes}</p>
+              <p className="mt-2 break-words text-sm whitespace-pre-line">{data.notes}</p>
             </div>
           ) : null}
         </section>
+      </div>
+    </div>
+  );
+}
+
+function TrackingCard({ id, courier, tracking }: { id: string; courier: string; tracking: string }) {
+  const qc = useQueryClient();
+  const [c, setC] = useState(courier);
+  const [t, setT] = useState(tracking);
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ courier_name: c || null, tracking_number: t || null } as never)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      toast.success("Tracking saved");
+      await qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: () => toast.error("Could not save tracking"),
+  });
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-5">
+      <h3 className="text-base font-bold">Courier tracking</h3>
+      <p className="mt-1 text-xs text-muted-foreground">Customers see this on the Track Order page.</p>
+      <div className="mt-3 space-y-2">
+        <Input value={c} onChange={(e) => setC(e.target.value)} placeholder="Courier (e.g. DTDC, India Post)" />
+        <Input value={t} onChange={(e) => setT(e.target.value)} placeholder="Tracking / AWB number" />
+        <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending}>Save tracking</Button>
       </div>
     </div>
   );

@@ -20,7 +20,11 @@ import {
   uploadProductVideo,
   type ProductInput,
   type ProductVariantItem,
+  uploadVariantImage,
 } from "@/lib/cms";
+
+const variantImages = (v?: { images?: string[]; image_url?: string | null } | null): string[] =>
+  v ? (v.images && v.images.length ? v.images.filter(Boolean) : v.image_url ? [v.image_url] : []) : [];
 import { AGE_GROUPS, CATEGORIES, invalidateProductCache } from "@/lib/catalog";
 
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB strict
@@ -191,23 +195,25 @@ function ProductEditor() {
     }
   };
 
-  // Upload variation image: strictly 1 image per variation & max 2 MB
+  // Upload variation image: up to 3 photos per variation, auto-compressed
   const onVariantFile = async (files: FileList | null) => {
     const file = files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      toast.error(`Variation image must be under 2 MB.`);
+    if (file.size > MAX_IMAGE_SIZE_BYTES * 5) {
+      toast.error(`Variation image must be under 10 MB.`);
       if (variantFileRef.current) variantFileRef.current.value = "";
       return;
     }
 
     setUploadingVariant(true);
     try {
-      const url = await uploadProductImage(file);
+      const url = await uploadVariantImage(file);
       if (activeVariantUploadIdx !== null) {
-        updateVariant(activeVariantUploadIdx, { image_url: url });
-        toast.success("Variation photo updated");
+        const current = draft?.variants?.[activeVariantUploadIdx];
+        const imgs = [...variantImages(current), url].slice(0, 3);
+        updateVariant(activeVariantUploadIdx, { images: imgs, image_url: imgs[0] ?? null });
+        toast.success("Variation photo added");
       } else {
         setNewVarImage(url);
         toast.success("Variation photo uploaded");
@@ -261,6 +267,7 @@ function ProductEditor() {
       compare_at_price: draft?.compare_at_price ?? null,
       stock: draft?.stock ?? 10,
       image_url: newVarImage,
+      images: newVarImage ? [newVarImage] : [],
     };
     const updated = [...(draft?.variants ?? []), newVariant];
     set("variants", updated);
@@ -490,7 +497,7 @@ function ProductEditor() {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-secondary/60 text-muted-foreground">
                       <tr>
-                        <th className="p-2.5 w-14">Photo</th>
+                        <th className="p-2.5 w-36">Photos (max 3)</th>
                         <th className="p-2.5 min-w-[140px]">Variation Name</th>
                         <th className="p-2.5 w-24">Price (₹)</th>
                         <th className="p-2.5 w-24">Compare (₹)</th>
@@ -502,28 +509,35 @@ function ProductEditor() {
                       {draft.variants.map((v, i) => (
                         <tr key={v.id || i} className="hover:bg-secondary/30 transition-colors">
                           <td className="p-2.5">
-                            <div className="relative h-9 w-9 rounded-lg border border-border bg-card overflow-hidden flex items-center justify-center">
-                              {v.image_url ? (
-                                <>
-                                  <img src={v.image_url} alt="" className="h-full w-full object-cover" />
+                            <div className="flex items-center gap-1">
+                              {variantImages(v).map((img, k) => (
+                                <div
+                                  key={img}
+                                  className="relative h-9 w-9 shrink-0 rounded-lg border border-border bg-card overflow-hidden"
+                                >
+                                  <img src={img} alt="" className="h-full w-full object-cover" />
                                   <button
                                     type="button"
-                                    onClick={() => updateVariant(i, { image_url: null })}
-                                    className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                                    title="Remove variation photo"
+                                    onClick={() => {
+                                      const imgs = variantImages(v).filter((_, j) => j !== k);
+                                      updateVariant(i, { images: imgs, image_url: imgs[0] ?? null });
+                                    }}
+                                    className="absolute inset-0 flex items-center justify-center bg-foreground/60 text-background opacity-0 transition-opacity hover:opacity-100"
+                                    title="Remove photo"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
-                                </>
-                              ) : (
+                                </div>
+                              ))}
+                              {variantImages(v).length < 3 && (
                                 <button
                                   type="button"
                                   onClick={() => {
                                     setActiveVariantUploadIdx(i);
                                     variantFileRef.current?.click();
                                   }}
-                                  className="h-full w-full flex items-center justify-center text-muted-foreground hover:text-foreground"
-                                  title="Upload 1 variation photo (max 2 MB)"
+                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground"
+                                  title="Add photo (up to 3)"
                                 >
                                   {uploadingVariant && activeVariantUploadIdx === i ? (
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
