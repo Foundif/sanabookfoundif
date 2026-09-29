@@ -24,7 +24,7 @@ type Tracked = {
 const STEPS = ["placed", "packed", "shipped", "delivered"] as const;
 
 export const Route = createFileRoute("/track")({
-  validateSearch: (s: Record<string, unknown>) => ({ order: typeof s.order === "string" ? s.order : undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({ order: typeof s["order"] === "string" ? (s["order"] as string) : undefined }),
   head: () => ({
     meta: [
       { title: "Track Your Order | Sana's Books India" },
