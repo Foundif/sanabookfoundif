@@ -326,7 +326,7 @@ export function SiteHeader() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-52 p-1.5">
                 <DropdownMenuItem asChild>
-                  <Link to="/track" className="cursor-pointer gap-2.5 font-medium py-2">
+                  <Link to="/track" search={{ order: undefined }} className="cursor-pointer gap-2.5 font-medium py-2">
                     <PackageSearch className="h-4 w-4 text-primary" />
                     <div>
                       <div className="text-xs font-bold text-foreground">Track Order</div>
