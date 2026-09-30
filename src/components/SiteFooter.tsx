@@ -11,20 +11,14 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
-            <img
-              src={logo}
-              alt="Sanabooks India logo"
-              className="h-10 w-10 rounded-full bg-cream object-contain"
-            />
+            <img src={logo} alt="Sanabooks India logo" className="h-10 w-10 rounded-full bg-cream object-contain" />
             <span className="text-base font-bold">Sanabooks India</span>
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed opacity-80">
-            A curated children's bookshop for Indian families. Same hand-picked catalogue as
-            Sanabooks Singapore, now shipping pan-India.
+            A curated children's bookshop for Indian families. Same hand-picked catalogue as Sanabooks Singapore, now
+            shipping pan-India.
           </p>
-          <p className="mt-4 text-xs opacity-70">
-            INR pricing inclusive of taxes · GST invoicing available
-          </p>
+          <p className="mt-4 text-xs opacity-70">INR pricing inclusive of taxes · GST invoicing available</p>
         </div>
 
         <div>
@@ -57,7 +51,7 @@ export function SiteFooter() {
           <h3 className="text-xs font-bold tracking-[0.14em] uppercase opacity-70">Help</h3>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
-              <Link to="/track" search={{ order: undefined }} className="opacity-85 hover:opacity-100">
+              <Link to="/track" className="opacity-85 hover:opacity-100">
                 Track your order
               </Link>
             </li>
