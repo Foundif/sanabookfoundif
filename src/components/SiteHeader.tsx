@@ -251,9 +251,9 @@ export function SiteHeader() {
           </Sheet>
 
           {/* Logo */}
-          <Link to="/" className="flex shrink-0 items-center gap-2">
-            <img src={logo} alt="Sanabooks India logo" className="h-9 w-9 rounded-full object-contain" />
-            <span className="text-lg font-bold tracking-tight text-primary">Sanabooks India</span>
+          <Link to="/" className="flex shrink-0 min-w-0 items-center gap-2">
+            <img src={logo} alt="Sanabooks India logo" className="h-9 w-9 rounded-full object-contain shrink-0" />
+            <span className="truncate text-base sm:text-lg font-bold tracking-tight text-primary">Sanabooks India</span>
           </Link>
 
           {/* Desktop Nav */}
