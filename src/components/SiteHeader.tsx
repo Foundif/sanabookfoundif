@@ -1,7 +1,24 @@
+// src/components/SiteHeader.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Heart, Menu, Search, Sparkles, User } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  Heart,
+  HelpCircle,
+  Info,
+  LayoutGrid,
+  Mail,
+  Menu,
+  PackageSearch,
+  Search,
+  ShoppingBag,
+  Sparkles,
+  User,
+} from "lucide-react";
 import logo from "@/assets/sanabooks-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,19 +37,35 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { DEFAULT_NOTICES, fetchSiteSettings } from "@/lib/settings";
 
-const MAIN_NAV = [
-  { label: "Shop All", to: "/shop" },
-  { label: "By Age", to: "/age/$tag", params: { tag: "age-3-5" } },
-  { label: "Reading Room", to: "/reading-room" },
-  { label: "Schools", to: "/schools" },
-  { label: "Help", to: "/faq" },
-  { label: "About", to: "/about" },
+const MAIN_PAGES = [
+  { label: "Shop All Books", to: "/shop", icon: ShoppingBag, desc: "Explore entire catalogue" },
+  {
+    label: "Track Your Order",
+    to: "/track",
+    icon: PackageSearch,
+    desc: "Live courier & delivery status",
+    highlight: true,
+  },
+  {
+    label: "Shop by Age (3–5)",
+    to: "/age/$tag",
+    params: { tag: "age-3-5" },
+    icon: Sparkles,
+    desc: "Curated for growing toddlers",
+  },
+  { label: "Reading Room", to: "/reading-room", icon: BookOpen, desc: "Guides, blogs & tips" },
+  { label: "For Schools & Bulk", to: "/schools", icon: GraduationCap, desc: "Curriculum & wholesale orders" },
+  { label: "About Sanabooks", to: "/about", icon: Info, desc: "Our story & mission" },
+  { label: "Help & FAQ", to: "/faq", icon: HelpCircle, desc: "Shipping, returns & queries" },
+  { label: "Contact Us", to: "/contact", icon: Mail, desc: "Email & WhatsApp support" },
 ];
 
 export function SiteHeader() {
   const [query, setQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"pages" | "categories">("pages");
+
   const { user } = useAuth();
   const wishlist = useWishlist();
   const navigate = useNavigate();
@@ -110,35 +143,110 @@ export function SiteHeader() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-80 overflow-y-auto">
-              <SheetTitle className="px-1 text-base">Browse Sanabooks India</SheetTitle>
-              <nav className="mt-4 grid gap-1">
-                {MAIN_NAV.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    params={(item as { params?: Record<string, string> }).params as never}
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-md px-3 py-2 text-sm font-semibold hover:bg-secondary"
+            <SheetContent side="left" className="flex w-84 flex-col p-0">
+              {/* Drawer Header */}
+              <div className="border-b border-border p-4">
+                <SheetTitle className="flex items-center gap-2 text-base font-bold text-primary">
+                  <img src={logo} alt="Sanabooks" className="h-7 w-7 rounded-full object-contain" />
+                  Sanabooks India
+                </SheetTitle>
+
+                {/* Switchable Tabs */}
+                <div className="mt-3 grid grid-cols-2 rounded-lg bg-secondary/80 p-1 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("pages")}
+                    className={`flex items-center justify-center gap-1.5 rounded-md py-1.5 transition-colors ${
+                      activeTab === "pages"
+                        ? "bg-background text-foreground shadow-xs font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    {item.label}
-                  </Link>
-                ))}
-                <div className="mt-4 px-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Categories & Bundles
+                    <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    Pages
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("categories")}
+                    className={`flex items-center justify-center gap-1.5 rounded-md py-1.5 transition-colors ${
+                      activeTab === "categories"
+                        ? "bg-background text-foreground shadow-xs font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5 text-saffron" />
+                    Categories
+                  </button>
                 </div>
-                {CATEGORIES.map((c) => (
-                  <Link
-                    key={c}
-                    to="/shop"
-                    search={{ category: c }}
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  >
-                    {c}
-                  </Link>
-                ))}
-              </nav>
+              </div>
+
+              {/* Drawer Body */}
+              <div className="flex-1 overflow-y-auto p-3">
+                {activeTab === "pages" ? (
+                  <nav className="grid gap-1">
+                    {MAIN_PAGES.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.label}
+                          to={item.to}
+                          params={(item as { params?: Record<string, string> }).params as never}
+                          onClick={() => setMenuOpen(false)}
+                          className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors ${
+                            item.highlight
+                              ? "bg-primary/10 text-primary hover:bg-primary/15 font-semibold"
+                              : "hover:bg-secondary text-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-primary">
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="text-left">
+                              <div className="text-sm font-semibold">{item.label}</div>
+                              <div className="text-[11px] text-muted-foreground">{item.desc}</div>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                ) : (
+                  <div className="grid gap-1">
+                    <p className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Browse by Shelves ({CATEGORIES.length})
+                    </p>
+                    {CATEGORIES.map((c) => (
+                      <Link
+                        key={c}
+                        to="/shop"
+                        search={{ category: c }}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-secondary hover:text-primary"
+                      >
+                        <span className="font-medium">{c}</span>
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="border-t border-border bg-surface/50 p-3">
+                <Link
+                  to={user ? "/account" : "/auth"}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-between rounded-lg bg-secondary/80 px-3 py-2 text-sm font-semibold hover:bg-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <span>{user ? "My Account" : "Sign In / Register"}</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              </div>
             </SheetContent>
           </Sheet>
 
@@ -149,7 +257,7 @@ export function SiteHeader() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="ml-4 hidden items-center gap-5 lg:flex">
+          <nav className="ml-4 hidden items-center gap-4 lg:flex">
             {/* Mega Menu Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -180,16 +288,71 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {MAIN_NAV.map((item) => (
-              <Link
-                key={item.label}
-                to={item.to}
-                params={(item as { params?: Record<string, string> }).params as never}
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
-              >
-                {item.label}
-              </Link>
-            ))}
+            <Link to="/shop" className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary">
+              Shop All
+            </Link>
+
+            <Link
+              to="/age/$tag"
+              params={{ tag: "age-3-5" }}
+              className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+            >
+              By Age
+            </Link>
+
+            <Link
+              to="/reading-room"
+              className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+            >
+              Reading Room
+            </Link>
+
+            <Link to="/schools" className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary">
+              Schools
+            </Link>
+
+            {/* Desktop Orders & Help Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-sm font-medium text-foreground/80 hover:text-primary"
+                >
+                  <PackageSearch className="h-4 w-4 text-primary" />
+                  Track & Help
+                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52 p-1.5">
+                <DropdownMenuItem asChild>
+                  <Link to="/track" className="cursor-pointer gap-2.5 font-medium py-2">
+                    <PackageSearch className="h-4 w-4 text-primary" />
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Track Order</div>
+                      <div className="text-[10px] text-muted-foreground">Check live courier status</div>
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/faq" className="cursor-pointer gap-2.5 text-xs font-medium py-2">
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                    <span>Frequently Asked Questions</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/contact" className="cursor-pointer gap-2.5 text-xs font-medium py-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span>Contact Customer Care</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Link to="/about" className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary">
+              About
+            </Link>
           </nav>
 
           {/* Desktop Search bar */}
@@ -240,7 +403,7 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {/* Mobile Search Bar (visible on <768px, but hidden on /shop since it lives in the sidebar filter) */}
+        {/* Mobile Search Bar (hidden on /shop since it lives in the sidebar filter) */}
         {!isShopPage && (
           <div className="border-t border-border/40 bg-surface/50 px-4 py-2 md:hidden">
             <form
