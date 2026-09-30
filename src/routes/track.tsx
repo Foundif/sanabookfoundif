@@ -24,9 +24,8 @@ type Tracked = {
 const STEPS = ["placed", "packed", "shipped", "delivered"] as const;
 
 export const Route = createFileRoute("/track")({
-  validateSearch: (s: Record<string, unknown>): { order?: string } => ({
-    order: typeof s["order"] === "string" ? (s["order"] as string) : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { order?: string } =>
+    typeof s["order"] === "string" && s["order"].trim() ? { order: s["order"].trim() } : {},
 
   head: () => ({
     meta: [
