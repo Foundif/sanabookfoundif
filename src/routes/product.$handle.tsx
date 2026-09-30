@@ -231,7 +231,8 @@ function ProductDetail() {
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
                 <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mb-2">
-                  <PackageSearch className="h-8 w-8 opacity-40" />
+                  {/* Replace line 234 */}
+                  <BookOpen className="h-8 w-8 opacity-40" />
                 </div>
                 <p className="text-sm font-medium">No cover image available</p>
               </div>
