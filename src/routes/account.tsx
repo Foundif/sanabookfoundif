@@ -152,17 +152,17 @@ function AccountPage() {
   const saved = orders.reduce((n, o) => n + Number(o.shipping_fee === 0 ? 49 : 0), 0);
 
   return (
-    <div className="bg-cream/40">
-      <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="bg-cream/40 w-full min-w-0 overflow-hidden">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:py-10 w-full min-w-0">
         <nav className="text-xs text-muted-foreground">
           <Link to="/" className="hover:text-primary">
             Home
           </Link>{" "}
           / <span className="font-semibold text-foreground">My account</span>
         </nav>
-        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Hi {displayName} 👋</h1>
+        <h1 className="mt-3 text-2xl sm:text-3xl font-bold">Hi {displayName} 👋</h1>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[240px_1fr]">
+        <div className="mt-6 sm:mt-8 grid gap-6 lg:grid-cols-[240px_1fr] w-full min-w-0">
           {/* sidebar */}
           <aside className="h-max rounded-2xl border border-border bg-card p-3 shadow-shelf lg:sticky lg:top-28">
             <div className="flex items-center gap-3 px-2 py-3">
@@ -252,7 +252,11 @@ type Orders = Awaited<ReturnType<typeof fetchMyOrders>>;
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rounded-2xl border border-border bg-card p-6 shadow-shelf ${className}`}>{children}</section>
+    <section
+      className={`rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-shelf w-full min-w-0 overflow-hidden ${className}`}
+    >
+      {children}
+    </section>
   );
 }
 
