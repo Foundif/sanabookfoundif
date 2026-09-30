@@ -199,10 +199,11 @@ function ProductDetail() {
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
         {/* Gallery / Video Media Section */}
+        {/* Gallery / Video Media Section */}
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <div className="group relative overflow-hidden rounded-2xl border border-border bg-secondary shadow-shelf">
+          <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-secondary/40 to-secondary/10 shadow-shelf flex items-center justify-center p-3 sm:p-6 min-h-[320px] sm:min-h-[460px] aspect-square sm:aspect-4/5">
             {showVideo && videoUrl ? (
-              <div className="aspect-4/5 w-full bg-black flex items-center justify-center">
+              <div className="h-full w-full bg-black rounded-xl overflow-hidden flex items-center justify-center">
                 {videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be") ? (
                   <iframe
                     src={videoUrl.replace("watch?v=", "embed/")}
@@ -211,18 +212,28 @@ function ProductDetail() {
                     allowFullScreen
                   />
                 ) : (
-                  <video src={videoUrl} controls autoPlay className="h-full w-full object-cover" />
+                  <video src={videoUrl} controls autoPlay className="h-full w-full object-contain" />
                 )}
               </div>
             ) : displayImages[activeImage] ? (
-              <img
-                src={displayImages[activeImage].node.url}
-                alt={displayImages[activeImage].node.altText ?? node.title}
-                className="aspect-4/5 w-full object-cover transition-transform duration-700 hover:scale-105"
-              />
+              <div className="relative flex h-full w-full items-center justify-center">
+                <img
+                  src={displayImages[activeImage].node.url}
+                  alt={displayImages[activeImage].node.altText ?? node.title}
+                  className="max-h-[300px] sm:max-h-[440px] w-auto max-w-full object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    // Fallback in case of a broken image link
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/favicon.png";
+                  }}
+                />
+              </div>
             ) : (
-              <div className="flex aspect-4/5 items-center justify-center text-sm text-muted-foreground">
-                No cover available
+              <div className="flex h-full w-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
+                <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mb-2">
+                  <PackageSearch className="h-8 w-8 opacity-40" />
+                </div>
+                <p className="text-sm font-medium">No cover image available</p>
               </div>
             )}
 
@@ -231,14 +242,14 @@ function ProductDetail() {
                 <button
                   onClick={() => setActiveImage((i) => (i - 1 + displayImages.length) % displayImages.length)}
                   aria-label="Previous image"
-                  className="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-primary shadow-shelf transition-opacity hover:bg-background"
+                  className="absolute top-1/2 left-2 sm:left-3 flex h-8 w-8 sm:h-9 sm:w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-primary shadow-shelf transition-opacity hover:bg-background"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setActiveImage((i) => (i + 1) % displayImages.length)}
                   aria-label="Next image"
-                  className="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-primary shadow-shelf transition-opacity hover:bg-background"
+                  className="absolute top-1/2 right-2 sm:right-3 flex h-8 w-8 sm:h-9 sm:w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-primary shadow-shelf transition-opacity hover:bg-background"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -247,7 +258,7 @@ function ProductDetail() {
           </div>
 
           {/* Media Thumbnails (Thumbnails + 1 Video Button) */}
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-3 flex gap-2 sm:gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {displayImages.map((img, i) => (
               <button
                 key={img.node.url}
@@ -255,11 +266,13 @@ function ProductDetail() {
                   setShowVideo(false);
                   setActiveImage(i);
                 }}
-                className={`h-20 w-16 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
-                  !showVideo && i === activeImage ? "border-primary" : "border-border hover:border-primary/50"
+                className={`h-16 w-14 sm:h-20 sm:w-16 shrink-0 overflow-hidden rounded-md border-2 bg-secondary/30 p-1 flex items-center justify-center transition-all ${
+                  !showVideo && i === activeImage
+                    ? "border-primary ring-1 ring-primary/40"
+                    : "border-border hover:border-primary/50"
                 }`}
               >
-                <img src={img.node.url} alt="" className="h-full w-full object-cover" />
+                <img src={img.node.url} alt="" className="h-full w-full object-contain" />
               </button>
             ))}
 
@@ -267,14 +280,14 @@ function ProductDetail() {
             {videoUrl && (
               <button
                 onClick={() => setShowVideo(true)}
-                className={`h-20 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-secondary flex flex-col items-center justify-center gap-1 transition-colors ${
+                className={`h-16 w-14 sm:h-20 sm:w-16 shrink-0 overflow-hidden rounded-md border-2 bg-secondary flex flex-col items-center justify-center gap-1 transition-colors ${
                   showVideo
-                    ? "border-primary text-primary"
+                    ? "border-primary text-primary ring-1 ring-primary/40"
                     : "border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Video className="h-5 w-5" />
-                <span className="text-[10px] font-bold">Video</span>
+                <Video className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-[9px] sm:text-[10px] font-bold">Video</span>
               </button>
             )}
           </div>
