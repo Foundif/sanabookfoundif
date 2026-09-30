@@ -55,8 +55,10 @@ type TabId = (typeof TABS)[number]["id"];
 export const Route = createFileRoute("/account")({
   validateSearch: (search: Record<string, unknown>): { tab?: TabId } => {
     const tab = String(search["tab"] ?? "");
+
     return TABS.some((t) => t.id === tab) ? { tab: tab as TabId } : {};
   },
+
   head: () => ({
     meta: [
       { title: "My account — Sanabooks India" },
@@ -65,27 +67,39 @@ export const Route = createFileRoute("/account")({
         content:
           "Your Sanabooks India account: orders, wishlist, saved addresses, payment preferences, your child's reading profile and email preferences.",
       },
-      { property: "og:title", content: "My account — Sanabooks India" },
+      {
+        property: "og:title",
+        content: "My account — Sanabooks India",
+      },
       {
         property: "og:description",
         content: "Track orders, manage addresses and tune book picks for your reader.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
     ],
   }),
+
   component: AccountPage,
 });
 
 function AccountPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
+
   const { user, loading, signOut } = useAuth();
+
   const queryClient = useQueryClient();
+
   const tab: TabId = search.tab ?? "dashboard";
 
   useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
+    if (!loading && !user) {
+      void navigate({ to: "/auth" });
+    }
   }, [loading, user, navigate]);
 
   const profileQuery = useQuery({
@@ -93,21 +107,25 @@ function AccountPage() {
     queryFn: () => fetchAccountProfile(user!.id),
     enabled: !!user,
   });
+
   const ordersQuery = useQuery({
     queryKey: ["my-orders", user?.id],
     queryFn: fetchMyOrders,
     enabled: !!user,
   });
+
   const wishlistQuery = useQuery({
     queryKey: ["wishlist", user?.id],
     queryFn: fetchWishlist,
     enabled: !!user,
   });
+
   const addressQuery = useQuery({
     queryKey: ["addresses", user?.id],
     queryFn: fetchAddresses,
     enabled: !!user,
   });
+
   const reviewsQuery = useQuery({
     queryKey: ["my-reviews", user?.id],
     queryFn: () => fetchMyReviews(user!.id),
@@ -116,18 +134,28 @@ function AccountPage() {
 
   const saveProfile = useMutation({
     mutationFn: (patch: Partial<Omit<AccountProfile, "id">>) => saveAccountProfile(user!.id, patch),
+
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["account-profile", user?.id] });
+      void queryClient.invalidateQueries({
+        queryKey: ["account-profile", user?.id],
+      });
+
       toast.success("Saved");
     },
+
     onError: (e: Error) => toast.error(e.message),
   });
 
   const handleSignOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
+
     await signOut();
-    void navigate({ to: "/auth", replace: true });
+
+    void navigate({
+      to: "/auth",
+      replace: true,
+    });
   };
 
   if (loading || !user) {
@@ -143,37 +171,44 @@ function AccountPage() {
   const wishlist = wishlistQuery.data ?? [];
   const addresses = addressQuery.data ?? [];
   const reviews = reviewsQuery.data ?? [];
+
   const displayName =
     profile?.display_name ??
     (user.user_metadata?.["display_name"] as string | undefined) ??
     user.email?.split("@")[0] ??
     "reader";
+
   const booksRead = orders.reduce((n, o) => n + o.items.reduce((m, i) => m + i.quantity, 0), 0);
+
   const saved = orders.reduce((n, o) => n + Number(o.shipping_fee === 0 ? 49 : 0), 0);
 
   return (
-    <div className="bg-cream/40 w-full min-w-0 overflow-hidden">
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:py-10 w-full min-w-0">
+    <div className="w-full min-w-0 overflow-hidden bg-cream/40">
+      <div className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 sm:py-10">
         <nav className="text-xs text-muted-foreground">
           <Link to="/" className="hover:text-primary">
             Home
           </Link>{" "}
           / <span className="font-semibold text-foreground">My account</span>
         </nav>
-        <h1 className="mt-3 text-2xl sm:text-3xl font-bold">Hi {displayName} 👋</h1>
 
-        <div className="mt-6 sm:mt-8 grid gap-6 lg:grid-cols-[240px_1fr] w-full min-w-0">
-          {/* sidebar */}
+        <h1 className="mt-3 text-2xl font-bold sm:text-3xl">Hi {displayName} 👋</h1>
+
+        <div className="mt-6 grid w-full min-w-0 gap-6 lg:mt-8 lg:grid-cols-[240px_1fr]">
+          {/* Sidebar */}
           <aside className="h-max rounded-2xl border border-border bg-card p-3 shadow-shelf lg:sticky lg:top-28">
             <div className="flex items-center gap-3 px-2 py-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                 {displayName.charAt(0).toUpperCase()}
               </span>
+
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold">{displayName}</p>
+
                 <p className="truncate text-xs text-muted-foreground">{user.email}</p>
               </div>
             </div>
+
             <div className="mt-2 grid gap-1">
               {TABS.map((t) => (
                 <Link
@@ -184,15 +219,18 @@ function AccountPage() {
                     tab === t.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >
-                  <t.icon className="h-4 w-4" /> {t.label}
+                  <t.icon className="h-4 w-4" />
+                  {t.label}
                 </Link>
               ))}
             </div>
+
             <button
               onClick={() => void handleSignOut()}
               className="mt-3 flex w-full items-center gap-2 border-t border-border px-3 pt-3 text-sm font-semibold text-muted-foreground hover:text-destructive"
             >
-              <LogOut className="h-4 w-4" /> Sign out
+              <LogOut className="h-4 w-4" />
+              Sign out
             </button>
           </aside>
 
@@ -207,23 +245,35 @@ function AccountPage() {
                 loading={ordersQuery.isLoading}
               />
             )}
+
             {tab === "orders" && <OrdersTab orders={orders} loading={ordersQuery.isLoading} />}
+
             {tab === "wishlist" && (
               <WishlistTab
                 items={wishlist}
                 loading={wishlistQuery.isLoading}
                 userId={user.id}
-                onChange={() => void queryClient.invalidateQueries({ queryKey: ["wishlist", user.id] })}
+                onChange={() =>
+                  void queryClient.invalidateQueries({
+                    queryKey: ["wishlist", user.id],
+                  })
+                }
               />
             )}
+
             {tab === "addresses" && (
               <AddressesTab
                 addresses={addresses}
                 loading={addressQuery.isLoading}
                 userId={user.id}
-                onChange={() => void queryClient.invalidateQueries({ queryKey: ["addresses", user.id] })}
+                onChange={() =>
+                  void queryClient.invalidateQueries({
+                    queryKey: ["addresses", user.id],
+                  })
+                }
               />
             )}
+
             {tab === "payments" && (
               <PaymentsTab
                 profile={profile ?? null}
@@ -231,6 +281,7 @@ function AccountPage() {
                 saving={saveProfile.isPending}
               />
             )}
+
             {tab === "child" && (
               <ChildTab
                 profile={profile ?? null}
@@ -238,6 +289,7 @@ function AccountPage() {
                 saving={saveProfile.isPending}
               />
             )}
+
             {tab === "communication" && (
               <CommunicationTab profile={profile ?? null} onSave={(patch) => saveProfile.mutate(patch)} />
             )}
@@ -253,7 +305,7 @@ type Orders = Awaited<ReturnType<typeof fetchMyOrders>>;
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <section
-      className={`rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-shelf w-full min-w-0 overflow-hidden ${className}`}
+      className={`w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-shelf sm:p-6 ${className}`}
     >
       {children}
     </section>
@@ -261,15 +313,28 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 }
 
 function statusTone(status: string) {
-  if (status === "delivered") return "bg-emerald-100 text-emerald-800";
-  if (status === "cancelled") return "bg-destructive/10 text-destructive";
-  if (status === "placed") return "bg-secondary text-foreground";
+  if (status === "delivered") {
+    return "bg-emerald-100 text-emerald-800";
+  }
+
+  if (status === "cancelled") {
+    return "bg-destructive/10 text-destructive";
+  }
+
+  if (status === "placed") {
+    return "bg-secondary text-foreground";
+  }
+
   return "bg-saffron/20 text-saffron-foreground";
 }
 
 function StatusPill({ status }: { status: string }) {
   return <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${statusTone(status)}`}>{status}</span>;
 }
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
 
 function DashboardTab({
   orders,
@@ -287,30 +352,47 @@ function DashboardTab({
   loading: boolean;
 }) {
   const recent = orders[0];
+
   const picks = pickForChild(profile);
 
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 sm:grid-cols-3">
         {[
-          { label: "Total orders", value: String(orders.length) },
-          { label: "Books read", value: String(booksRead) },
-          { label: "You've saved", value: formatINR(String(saved)) },
+          {
+            label: "Total orders",
+            value: String(orders.length),
+          },
+          {
+            label: "Books read",
+            value: String(booksRead),
+          },
+          {
+            label: "You've saved",
+            value: formatINR(String(saved)),
+          },
         ].map((s) => (
           <Card key={s.label} className="p-5">
             <p className="text-xs text-muted-foreground">{s.label}</p>
+
             <p className="mt-2 text-3xl font-bold">{s.value}</p>
           </Card>
         ))}
       </div>
 
+      {/* =====================================================
+          RECENT ORDER
+          ===================================================== */}
+
       <Card>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold">Recent order</h2>
-          <Link to="/account" search={{ tab: "orders" }} className="text-sm font-semibold text-primary">
+
+          <Link to="/account" search={{ tab: "orders" }} className="shrink-0 text-sm font-semibold text-primary">
             View all →
           </Link>
         </div>
+
         {loading ? (
           <Skeleton className="mt-4 h-20 rounded-xl" />
         ) : !recent ? (
@@ -322,38 +404,48 @@ function DashboardTab({
             .
           </p>
         ) : (
-          <div className="mt-4 flex flex-wrap items-center gap-4">
-            {recent.items[0]?.image_url && (
-              <img
-                src={recent.items[0].image_url}
-                alt=""
-                loading="lazy"
-                className="h-20 w-16 rounded-lg object-cover"
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold">
-                {recent.items[0]?.product_title ?? "Order"}
-                {recent.items.length > 1 && ` · +${recent.items.length - 1} more`}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Order #{recent.order_number} · {formatINR(String(recent.total))} · placed{" "}
-                {new Date(recent.created_at).toLocaleDateString("en-IN", {
-                  day: "numeric",
-                  month: "short",
-                })}
-              </p>
+          <div className="mt-4 flex w-full min-w-0 items-start justify-between gap-3 sm:items-center sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
+              {recent.items[0]?.image_url && (
+                <img
+                  src={recent.items[0].image_url}
+                  alt=""
+                  loading="lazy"
+                  className="h-16 w-14 shrink-0 rounded-lg bg-secondary/30 object-contain p-1 sm:h-20 sm:w-16"
+                />
+              )}
+
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
+                  {recent.items[0]?.product_title ?? "Order"}
+
+                  {recent.items.length > 1 && ` · +${recent.items.length - 1} more`}
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Order #{recent.order_number} · {formatINR(String(recent.total))} · placed{" "}
+                  {new Date(recent.created_at).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </p>
+              </div>
             </div>
-            <StatusPill status={recent.status} />
+
+            <div className="shrink-0 pt-0.5 sm:pt-0">
+              <StatusPill status={recent.status} />
+            </div>
           </div>
         )}
       </Card>
 
+      {/* Picks */}
       <Card>
         <h2 className="text-lg font-bold">
           Picked for {profile?.child_name ?? "your reader"}
           {profile?.child_age ? ` (age ${profile.child_age})` : ""}
         </h2>
+
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {picks.map((p: ShopifyProduct) => (
             <ProductCard key={p.node.handle} product={p} />
@@ -361,10 +453,13 @@ function DashboardTab({
         </div>
       </Card>
 
+      {/* Reviews */}
       <Card>
         <h2 className="text-lg font-bold">Your reviews</h2>
+
         <p className="mt-2 text-sm text-muted-foreground">
-          You have written {reviewCount} review{reviewCount === 1 ? "" : "s"}.{" "}
+          You have written {reviewCount} review
+          {reviewCount === 1 ? "" : "s"}.{" "}
           <Link to="/shop" className="font-semibold text-primary">
             Review another book
           </Link>
@@ -377,19 +472,30 @@ function DashboardTab({
 
 function pickForChild(profile: AccountProfile | null) {
   const all = allProducts();
+
   const age = profile?.child_age;
+
   const tag = age == null ? null : age <= 2 ? "age-0-2" : age <= 5 ? "age-3-5" : age <= 8 ? "age-6-8" : "age-9-12";
+
   const matched = tag ? all.filter((p: ShopifyProduct) => p.node.tags.includes(tag)) : [];
 
   return (matched.length >= 3 ? matched : all).slice(0, 3);
 }
 
+/* =========================================================
+   MY ORDERS
+   ========================================================= */
+
 function OrdersTab({ orders, loading }: { orders: Orders; loading: boolean }) {
-  if (loading) return <Skeleton className="h-64 rounded-2xl" />;
-  if (!orders.length)
+  if (loading) {
+    return <Skeleton className="h-64 rounded-2xl" />;
+  }
+
+  if (!orders.length) {
     return (
       <Card>
         <h2 className="text-lg font-bold">My orders</h2>
+
         <p className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           You have not placed an order yet.{" "}
           <Link to="/shop" className="font-semibold text-primary">
@@ -399,16 +505,20 @@ function OrdersTab({ orders, loading }: { orders: Orders; loading: boolean }) {
         </p>
       </Card>
     );
+  }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid w-full min-w-0 gap-4">
       {orders.map((o) => {
         const step = ORDER_STATUSES.indexOf(o.status as (typeof ORDER_STATUSES)[number]);
+
         return (
           <Card key={o.id}>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+            {/* Order header */}
+            <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
                 <p className="text-sm font-bold">Order #{o.order_number}</p>
+
                 <p className="mt-1 text-xs text-muted-foreground">
                   Placed{" "}
                   {new Date(o.created_at).toLocaleDateString("en-IN", {
@@ -419,44 +529,68 @@ function OrdersTab({ orders, loading }: { orders: Orders; loading: boolean }) {
                   · {o.payment_method.toUpperCase()} · {o.shipping_method}
                 </p>
               </div>
+
               <StatusPill status={o.status} />
             </div>
 
+            {/* Order progress */}
             {o.status !== "cancelled" && (
-              <div className="mt-4 flex gap-1">
+              <div className="mt-4 flex w-full gap-1">
                 {ORDER_STATUSES.slice(0, 4).map((s, i) => (
-                  <div key={s} className="flex-1">
+                  <div key={s} className="min-w-0 flex-1">
                     <div className={`h-1.5 rounded-full ${i <= step ? "bg-primary" : "bg-secondary"}`} />
-                    <p className="mt-1.5 text-[11px] capitalize text-muted-foreground">{s}</p>
+
+                    <p className="mt-1.5 truncate text-[11px] capitalize text-muted-foreground">{s}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            <ul className="mt-5 grid gap-3">
+            {/* Order items */}
+            <ul className="mt-5 grid w-full min-w-0 gap-3">
               {o.items.map((i) => (
-                <li key={i.id} className="flex items-center gap-3">
+                <li key={i.id} className="flex w-full min-w-0 items-start gap-3 sm:items-center">
                   {i.image_url && (
-                    <img src={i.image_url} alt="" loading="lazy" className="h-16 w-12 rounded-md object-cover" />
+                    <img
+                      src={i.image_url}
+                      alt=""
+                      loading="lazy"
+                      className="h-16 w-12 shrink-0 rounded-md bg-secondary/30 object-contain p-1"
+                    />
                   )}
-                  <Link
-                    to="/product/$handle"
-                    params={{ handle: i.product_handle }}
-                    className="min-w-0 flex-1 text-sm font-semibold hover:text-primary"
-                  >
-                    {i.product_title}
-                  </Link>
-                  <span className="text-xs text-muted-foreground">× {i.quantity}</span>
-                  <span className="text-sm font-bold">{formatINR(String(i.unit_price))}</span>
+
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      to="/product/$handle"
+                      params={{
+                        handle: i.product_handle,
+                      }}
+                      className="line-clamp-2 text-sm font-semibold leading-snug hover:text-primary"
+                    >
+                      {i.product_title}
+                    </Link>
+
+                    {i.variant_title && (
+                      <span className="mt-0.5 block text-[11px] font-medium text-muted-foreground">
+                        Variation: {i.variant_title}
+                      </span>
+                    )}
+                  </div>
+
+                  <span className="shrink-0 text-xs text-muted-foreground">× {i.quantity}</span>
+
+                  <span className="shrink-0 text-sm font-bold">{formatINR(String(i.unit_price))}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-border pt-4 text-sm">
-              <span className="text-muted-foreground">
+            {/* Order footer */}
+            <div className="mt-5 flex w-full min-w-0 flex-wrap items-start justify-between gap-3 border-t border-border pt-4 text-sm sm:items-center">
+              <span className="min-w-0 text-muted-foreground">
                 Ships to {o.city}, {o.state} {o.pincode ?? ""}
               </span>
-              <span className="font-bold">Total {formatINR(String(o.total))}</span>
+
+              <span className="shrink-0 font-bold">Total {formatINR(String(o.total))}</span>
             </div>
           </Card>
         );
@@ -465,13 +599,22 @@ function OrdersTab({ orders, loading }: { orders: Orders; loading: boolean }) {
   );
 }
 
+/* =========================================================
+   WISHLIST
+   ========================================================= */
+
 function WishlistTab({
   items,
   loading,
   userId,
   onChange,
 }: {
-  items: { id: string; product_handle: string; product_title: string | null; image_url: string | null }[];
+  items: {
+    id: string;
+    product_handle: string;
+    product_title: string | null;
+    image_url: string | null;
+  }[];
   loading: boolean;
   userId: string;
   onChange: () => void;
@@ -479,18 +622,23 @@ function WishlistTab({
   const remove = async (handle: string) => {
     try {
       await removeFromWishlist(userId, handle);
+
       toast.success("Removed from wishlist");
+
       onChange();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not remove");
     }
   };
 
-  if (loading) return <Skeleton className="h-64 rounded-2xl" />;
+  if (loading) {
+    return <Skeleton className="h-64 rounded-2xl" />;
+  }
 
   return (
     <Card>
       <h2 className="text-lg font-bold">Wishlist</h2>
+
       {!items.length ? (
         <p className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           Nothing saved yet. Tap the heart on any book to keep it here.{" "}
@@ -506,13 +654,17 @@ function WishlistTab({
               {w.image_url && (
                 <img src={w.image_url} alt="" loading="lazy" className="h-20 w-16 rounded-md object-cover" />
               )}
+
               <Link
                 to="/product/$handle"
-                params={{ handle: w.product_handle }}
+                params={{
+                  handle: w.product_handle,
+                }}
                 className="min-w-0 flex-1 text-sm font-bold hover:text-primary"
               >
                 {w.product_title ?? w.product_handle}
               </Link>
+
               <Button variant="ghost" size="icon" aria-label="Remove" onClick={() => void remove(w.product_handle)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -523,6 +675,10 @@ function WishlistTab({
     </Card>
   );
 }
+
+/* =========================================================
+   ADDRESSES
+   ========================================================= */
 
 const EMPTY_ADDRESS: AddressInput = {
   label: "Home",
@@ -541,32 +697,44 @@ function AddressesTab({
   userId,
   onChange,
 }: {
-  addresses: (AddressInput & { id: string })[];
+  addresses: (AddressInput & {
+    id: string;
+  })[];
   loading: boolean;
   userId: string;
   onChange: () => void;
 }) {
   const [form, setForm] = useState<AddressInput | null>(null);
+
   const [editing, setEditing] = useState<string | null>(null);
+
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!form) return;
+
     if (!/^\d{6}$/.test(form.pincode)) {
       toast.error("Enter a valid 6-digit pincode");
       return;
     }
+
     if (!/^\d{10}$/.test(form.phone.replace(/\D/g, "").slice(-10))) {
       toast.error("Enter a valid 10-digit mobile number");
       return;
     }
+
     setBusy(true);
+
     try {
       await saveAddress(userId, form, editing ?? undefined);
+
       toast.success(editing ? "Address updated" : "Address saved");
+
       setForm(null);
       setEditing(null);
+
       onChange();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save address");
@@ -578,30 +746,40 @@ function AddressesTab({
   const remove = async (id: string) => {
     try {
       await deleteAddress(id);
+
       toast.success("Address deleted");
+
       onChange();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not delete");
     }
   };
 
-  if (loading) return <Skeleton className="h-64 rounded-2xl" />;
+  if (loading) {
+    return <Skeleton className="h-64 rounded-2xl" />;
+  }
 
   return (
     <div className="grid gap-4">
       <Card>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Saved addresses</h2>
+
           {!form && (
             <Button
               variant="outline"
               className="rounded-full"
               onClick={() => {
                 setEditing(null);
-                setForm({ ...EMPTY_ADDRESS, is_default: addresses.length === 0 });
+
+                setForm({
+                  ...EMPTY_ADDRESS,
+                  is_default: addresses.length === 0,
+                });
               }}
             >
-              <Plus className="mr-2 h-4 w-4" /> Add address
+              <Plus className="mr-2 h-4 w-4" />
+              Add address
             </Button>
           )}
         </div>
@@ -616,16 +794,21 @@ function AddressesTab({
           {addresses.map((a) => (
             <li key={a.id} className="rounded-xl border border-border p-4">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold tracking-wide uppercase text-primary">{a.label}</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-primary">{a.label}</span>
+
                 {a.is_default && (
                   <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-bold">Default</span>
                 )}
               </div>
+
               <p className="mt-2 text-sm font-bold">{a.full_name}</p>
+
               <p className="mt-1 text-sm text-muted-foreground">
                 {a.address}, {a.city}, {a.state} — {a.pincode}
               </p>
+
               <p className="mt-1 text-sm text-muted-foreground">{a.phone}</p>
+
               <div className="mt-3 flex gap-2">
                 <Button
                   size="sm"
@@ -633,12 +816,14 @@ function AddressesTab({
                   className="rounded-full"
                   onClick={() => {
                     const { id, ...rest } = a;
+
                     setEditing(id);
                     setForm(rest);
                   }}
                 >
                   Edit
                 </Button>
+
                 <Button
                   size="sm"
                   variant="ghost"
@@ -657,6 +842,7 @@ function AddressesTab({
         <Card>
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold">{editing ? "Edit address" : "New address"}</h3>
+
             <Button
               variant="ghost"
               size="icon"
@@ -669,6 +855,7 @@ function AddressesTab({
               <X className="h-4 w-4" />
             </Button>
           </div>
+
           <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
             {(
               [
@@ -682,29 +869,53 @@ function AddressesTab({
             ).map(([key, label]) => (
               <div key={key} className="grid gap-1.5">
                 <Label htmlFor={key}>{label}</Label>
+
                 <Input
                   id={key}
                   required
                   value={form[key] as string}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      [key]: e.target.value,
+                    })
+                  }
                 />
               </div>
             ))}
+
             <div className="grid gap-1.5 sm:col-span-2">
               <Label htmlFor="address">Flat, building, street, area</Label>
+
               <Input
                 id="address"
                 required
                 value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    address: e.target.value,
+                  })
+                }
               />
             </div>
+
             <label className="flex items-center gap-3 text-sm sm:col-span-2">
-              <Switch checked={form.is_default} onCheckedChange={(v) => setForm({ ...form, is_default: v })} />
+              <Switch
+                checked={form.is_default}
+                onCheckedChange={(v) =>
+                  setForm({
+                    ...form,
+                    is_default: v,
+                  })
+                }
+              />
               Use as my default delivery address
             </label>
+
             <Button type="submit" className="rounded-full sm:col-span-2" disabled={busy}>
-              {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save address
+              {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save address
             </Button>
           </form>
         </Card>
@@ -713,11 +924,31 @@ function AddressesTab({
   );
 }
 
+/* =========================================================
+   PAYMENT METHODS
+   ========================================================= */
+
 const PAYMENT_METHODS = [
-  { id: "upi", title: "UPI", note: "GPay, PhonePe, Paytm — instant confirmation" },
-  { id: "card", title: "Card", note: "Visa, Mastercard, RuPay — 3D secure" },
-  { id: "netbanking", title: "Net banking", note: "All major Indian banks" },
-  { id: "cod", title: "Cash on delivery", note: "₹29 handling fee, pay the courier" },
+  {
+    id: "upi",
+    title: "UPI",
+    note: "GPay, PhonePe, Paytm — instant confirmation",
+  },
+  {
+    id: "card",
+    title: "Card",
+    note: "Visa, Mastercard, RuPay — 3D secure",
+  },
+  {
+    id: "netbanking",
+    title: "Net banking",
+    note: "All major Indian banks",
+  },
+  {
+    id: "cod",
+    title: "Cash on delivery",
+    note: "₹29 handling fee, pay the courier",
+  },
 ] as const;
 
 function PaymentsTab({
@@ -730,11 +961,13 @@ function PaymentsTab({
   saving: boolean;
 }) {
   const [method, setMethod] = useState(profile?.preferred_payment ?? "upi");
+
   const [upi, setUpi] = useState(profile?.upi_id ?? "");
 
   useEffect(() => {
     if (profile) {
       setMethod(profile.preferred_payment ?? "upi");
+
       setUpi(profile.upi_id ?? "");
     }
   }, [profile]);
@@ -742,10 +975,12 @@ function PaymentsTab({
   return (
     <Card>
       <h2 className="text-lg font-bold">Payment methods</h2>
+
       <p className="mt-1 text-sm text-muted-foreground">
         Pick how you usually pay — we preselect it at checkout. We never store card numbers; they are handled by our
         payment partner.
       </p>
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {PAYMENT_METHODS.map((m) => (
           <button
@@ -757,6 +992,7 @@ function PaymentsTab({
             }`}
           >
             <p className="text-sm font-bold">{m.title}</p>
+
             <p className="mt-1 text-xs text-muted-foreground">{m.note}</p>
           </button>
         ))}
@@ -765,6 +1001,7 @@ function PaymentsTab({
       {method === "upi" && (
         <div className="mt-5 grid max-w-sm gap-1.5">
           <Label htmlFor="upi">Your UPI ID (optional)</Label>
+
           <Input id="upi" placeholder="name@bank" value={upi} onChange={(e) => setUpi(e.target.value)} />
         </div>
       )}
@@ -772,13 +1009,23 @@ function PaymentsTab({
       <Button
         className="mt-6 rounded-full"
         disabled={saving}
-        onClick={() => onSave({ preferred_payment: method, upi_id: upi.trim() || null })}
+        onClick={() =>
+          onSave({
+            preferred_payment: method,
+            upi_id: upi.trim() || null,
+          })
+        }
       >
-        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save preference
+        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Save preference
       </Button>
     </Card>
   );
 }
+
+/* =========================================================
+   CHILD PROFILE
+   ========================================================= */
 
 function ChildTab({
   profile,
@@ -790,13 +1037,17 @@ function ChildTab({
   saving: boolean;
 }) {
   const [name, setName] = useState(profile?.child_name ?? "");
+
   const [age, setAge] = useState(profile?.child_age ? String(profile.child_age) : "");
+
   const [interests, setInterests] = useState<string[]>(profile?.child_interests ?? []);
 
   useEffect(() => {
     if (profile) {
       setName(profile.child_name ?? "");
+
       setAge(profile.child_age ? String(profile.child_age) : "");
+
       setInterests(profile.child_interests ?? []);
     }
   }, [profile]);
@@ -806,14 +1057,19 @@ function ChildTab({
   return (
     <Card>
       <h2 className="text-lg font-bold">Your child's profile</h2>
+
       <p className="mt-1 text-sm text-muted-foreground">Help us pick better books — tell us about your reader.</p>
+
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="grid gap-1.5">
           <Label htmlFor="child-name">Name</Label>
+
           <Input id="child-name" value={name} placeholder="Aanya" onChange={(e) => setName(e.target.value)} />
         </div>
+
         <div className="grid gap-1.5">
           <Label htmlFor="child-age">Age</Label>
+
           <Input
             id="child-age"
             type="number"
@@ -827,9 +1083,11 @@ function ChildTab({
       </div>
 
       <p className="mt-6 eyebrow">Loves</p>
+
       <div className="mt-3 flex flex-wrap gap-2">
         {INTEREST_OPTIONS.map((i) => {
           const on = interests.includes(i);
+
           return (
             <button
               key={i}
@@ -841,7 +1099,9 @@ function ChildTab({
                   : "border-border text-muted-foreground hover:bg-secondary"
               }`}
             >
-              {i} {on ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              {i}
+
+              {on ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
             </button>
           );
         })}
@@ -853,19 +1113,28 @@ function ChildTab({
         onClick={() =>
           onSave({
             child_name: name.trim() || null,
+
             child_age: age ? Number(age) : null,
+
             child_interests: interests,
           })
         }
       >
-        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save reader profile
+        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Save reader profile
       </Button>
+
       <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-        <Star className="h-3.5 w-3.5 text-saffron" /> Your dashboard picks update from this age.
+        <Star className="h-3.5 w-3.5 text-saffron" />
+        Your dashboard picks update from this age.
       </p>
     </Card>
   );
 }
+
+/* =========================================================
+   COMMUNICATION
+   ========================================================= */
 
 const COMMS = [
   ["notify_picks", "Monthly book picks"],
@@ -884,14 +1153,24 @@ function CommunicationTab({
   return (
     <Card>
       <h2 className="text-lg font-bold">Communication</h2>
+
       <p className="mt-1 text-sm text-muted-foreground">
         Choose what lands in your inbox. Order updates keep you posted on deliveries.
       </p>
+
       <ul className="mt-5 divide-y divide-border">
         {COMMS.map(([key, label]) => (
           <li key={key} className="flex items-center justify-between py-4">
             <span className="text-sm font-semibold">{label}</span>
-            <Switch checked={profile ? Boolean(profile[key]) : false} onCheckedChange={(v) => onSave({ [key]: v })} />
+
+            <Switch
+              checked={profile ? Boolean(profile[key]) : false}
+              onCheckedChange={(v) =>
+                onSave({
+                  [key]: v,
+                })
+              }
+            />
           </li>
         ))}
       </ul>
