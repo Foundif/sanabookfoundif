@@ -43,7 +43,7 @@ function ThankYouPage() {
   }, [order, total]);
 
   const whatsappMessage = encodeURIComponent(
-    `Hi Sana's Books team, I just placed order ${order ? `#${order}` : ""}. Could you confirm my tracking details?`
+    `Hi Sana's Books team, I just placed order ${order ? `#${order}` : ""}. Could you confirm my tracking details?`,
   );
 
   return (
@@ -68,13 +68,12 @@ function ThankYouPage() {
               </p>
             )}
             <p className="mt-4 text-xs text-muted-foreground">
-              A confirmation email has been sent to your email address. To track your order, send this order ID to us on WhatsApp or use the Track Order page.
+              A confirmation email has been sent to your email address. To track your order, send this order ID to us on
+              WhatsApp or use the Track Order page.
             </p>
           </div>
         ) : (
-          <p className="mt-4 text-muted-foreground">
-            Your books are being carefully prepared for dispatch.
-          </p>
+          <p className="mt-4 text-muted-foreground">Your books are being carefully prepared for dispatch.</p>
         )}
 
         {/* Action buttons */}
@@ -86,14 +85,13 @@ function ThankYouPage() {
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full">
-            <Link to="/track" search={{ order: order || undefined }}>Track Order</Link>
+            {/* Change line 89 to: */}
+            <Link to="/track" search={order ? { order } : {}}>
+              Track Order
+            </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full">
-            <a
-              href={`https://wa.me/919150113923?text=${whatsappMessage}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={`https://wa.me/919150113923?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-2 h-4 w-4 text-leaf" />
               WhatsApp Updates
             </a>
