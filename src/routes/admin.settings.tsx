@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, CheckCircle2, Loader2, Plus, Shield, Trash2, UserCheck, UserPlus, Users, Wrench } from "lucide-react";
+import { Bell, CheckCircle2, Loader2, Shield, Trash2, Truck, UserCheck, UserPlus, Users, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/admin/settings")({
   head: () => ({
     meta: [
       { title: "Store settings — Sanabooks India admin" },
-      { name: "description", content: "Maintenance mode, header notices, and team access." },
+      { name: "description", content: "Maintenance mode, header notices, shipping charges, and team access." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -43,10 +43,6 @@ function toLocalInput(iso: string | null) {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-
-const [freeThreshold, setFreeThreshold] = useState<number>(499);
-const [standardCharge, setStandardCharge] = useState<number>(49);
-const [expressCharge, setExpressCharge] = useState<number>(99);
 
 const PRESETS = [
   { label: "30 minutes", minutes: 30 },
@@ -75,6 +71,11 @@ function AdminSettings() {
     queryKey: ["admin-team-members"],
     queryFn: () => fetchTeam(),
   });
+
+  // Shipping charges state
+  const [freeThreshold, setFreeThreshold] = useState<number>(499);
+  const [standardCharge, setStandardCharge] = useState<number>(49);
+  const [expressCharge, setExpressCharge] = useState<number>(99);
 
   // Maintenance state
   const [enabled, setEnabled] = useState(false);
@@ -254,7 +255,7 @@ function AdminSettings() {
                 rows={4}
                 value={noticesText}
                 onChange={(e) => setNoticesText(e.target.value)}
-                placeholder="Free shipping over ₹499&#10;Cash on delivery available&#10;Up to 25% off bundles"
+                placeholder="Free shipping over ₹499&#10;Fast Pan-India Delivery&#10;Up to 25% off book sets"
                 className="font-mono text-sm leading-relaxed"
               />
               <p className="text-xs text-muted-foreground">
@@ -285,7 +286,64 @@ function AdminSettings() {
         </div>
       </section>
 
-      {/* 2. Team & Admin Access */}
+      {/* 2. Shipping & Delivery Charges */}
+      <section className="grid gap-5 rounded-xl border border-border bg-card p-6">
+        <header className="border-b border-border pb-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
+            <Truck className="h-5 w-5 text-primary" /> Delivery Charges & Free Shipping
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Configure order thresholds for free delivery and standard/express courier rates.
+          </p>
+        </header>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-1.5">
+            <Label htmlFor="freeThreshold">Free Shipping Minimum (₹)</Label>
+            <Input
+              id="freeThreshold"
+              type="number"
+              min={0}
+              value={freeThreshold}
+              onChange={(e) => setFreeThreshold(Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">Carts above this amount get free standard delivery.</p>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="standardCharge">Standard Delivery Fee (₹)</Label>
+            <Input
+              id="standardCharge"
+              type="number"
+              min={0}
+              value={standardCharge}
+              onChange={(e) => setStandardCharge(Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">Charged when cart subtotal is below the free threshold.</p>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="expressCharge">Express Delivery Fee (₹)</Label>
+            <Input
+              id="expressCharge"
+              type="number"
+              min={0}
+              value={expressCharge}
+              onChange={(e) => setExpressCharge(Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">Flat rate for priority air delivery (2-3 days).</p>
+          </div>
+        </div>
+
+        <div>
+          <Button onClick={saveAll} disabled={busy} className="rounded-full">
+            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Shipping Settings
+          </Button>
+        </div>
+      </section>
+
+      {/* 3. Team & Admin Access */}
       <section className="grid gap-5 rounded-xl border border-border bg-card p-6">
         <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
           <div>
@@ -414,7 +472,7 @@ function AdminSettings() {
         )}
       </section>
 
-      {/* 3. Maintenance Mode */}
+      {/* 4. Maintenance Mode */}
       <section className="grid gap-5 rounded-xl border border-border bg-card p-6">
         <header className="flex items-center justify-between border-b border-border pb-4">
           <div>
