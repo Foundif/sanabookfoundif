@@ -185,8 +185,8 @@ function ProductDetail() {
   const relatedItems = (related ?? []).filter((p) => p.node.handle !== handle).slice(0, 4);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <nav className="text-xs text-muted-foreground">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8 w-full min-w-0 overflow-hidden">
+      <nav className="text-xs text-muted-foreground truncate">
         <Link to="/" className="hover:text-primary">
           Home
         </Link>{" "}
@@ -197,11 +197,12 @@ function ProductDetail() {
         / <span className="text-foreground">{node.title}</span>
       </nav>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-2">
-        {/* Gallery / Video Media Section */}
-        {/* Gallery / Video Media Section */}
-        <div className="lg:sticky lg:top-28 lg:self-start">
-          <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-secondary/40 to-secondary/10 shadow-shelf flex items-center justify-center p-3 sm:p-6 min-h-[320px] sm:min-h-[460px] aspect-square sm:aspect-4/5">
+      {/* Main Grid: w-full and min-w-0 prevent column blowout */}
+      <div className="mt-6 grid gap-8 lg:grid-cols-2 w-full min-w-0">
+        {/* Gallery / Video Media Column */}
+        <div className="w-full min-w-0 lg:sticky lg:top-28 lg:self-start">
+          {/* Main Container: locked to w-full with aspect-square on mobile and aspect-4/5 on desktop */}
+          <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-secondary/40 to-secondary/10 shadow-shelf flex items-center justify-center p-3 sm:p-6 w-full aspect-square sm:aspect-4/5 select-none">
             {showVideo && videoUrl ? (
               <div className="h-full w-full bg-black rounded-xl overflow-hidden flex items-center justify-center">
                 {videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be") ? (
@@ -220,9 +221,8 @@ function ProductDetail() {
                 <img
                   src={displayImages[activeImage].node.url}
                   alt={displayImages[activeImage].node.altText ?? node.title}
-                  className="max-h-[300px] sm:max-h-[440px] w-auto max-w-full object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
-                    // Fallback in case of a broken image link
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = "/favicon.png";
                   }}
@@ -231,7 +231,6 @@ function ProductDetail() {
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
                 <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mb-2">
-                  {/* Replace line 234 */}
                   <BookOpen className="h-8 w-8 opacity-40" />
                 </div>
                 <p className="text-sm font-medium">No cover image available</p>
@@ -258,8 +257,8 @@ function ProductDetail() {
             )}
           </div>
 
-          {/* Media Thumbnails (Thumbnails + 1 Video Button) */}
-          <div className="mt-3 flex gap-2 sm:gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Media Thumbnails Row */}
+          <div className="mt-3 flex w-full max-w-full gap-2 sm:gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {displayImages.map((img, i) => (
               <button
                 key={img.node.url}
@@ -277,7 +276,6 @@ function ProductDetail() {
               </button>
             ))}
 
-            {/* Video preview thumb */}
             {videoUrl && (
               <button
                 onClick={() => setShowVideo(true)}
@@ -294,8 +292,8 @@ function ProductDetail() {
           </div>
         </div>
 
-        {/* Product Details Section */}
-        <div className="space-y-6">
+        {/* Product Details Section: add w-full min-w-0 */}
+        <div className="w-full min-w-0 space-y-6">
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
