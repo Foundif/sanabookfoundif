@@ -6,6 +6,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { ShopifyProduct } from "@/lib/shopify";
+import { pixelTrack } from "@/lib/analytics";
 
 export interface CartItem {
   lineId: string | null;
@@ -42,6 +43,13 @@ export const useCartStore = create<CartStore>()(
 
       addItem: async (item) => {
         const items = get().items;
+        pixelTrack("AddToCart", {
+          content_ids: [item.product.node.handle],
+          content_name: item.product.node.title,
+          content_type: "product",
+          value: parseFloat(item.price.amount) * item.quantity,
+          currency: "INR",
+        });
         const existing = items.find((i) => i.variantId === item.variantId);
         if (existing) {
           set({
