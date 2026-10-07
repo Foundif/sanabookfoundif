@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { BadgePercent, CheckCircle2, Loader2, Lock, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
@@ -97,6 +97,19 @@ function CheckoutPage() {
   const shippingCost = coupon?.ok && coupon.free_shipping ? 0 : rawShipping;
   const codFee = 0;
   const total = Math.max(0, subtotal - discount + shippingCost + codFee);
+
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (checkoutTracked.current || items.length === 0) return;
+    checkoutTracked.current = true;
+    pixelTrack("InitiateCheckout", {
+      content_ids: items.map((i) => i.product.node.handle),
+      content_type: "product",
+      num_items: items.reduce((s, i) => s + i.quantity, 0),
+      value: subtotal,
+      currency: "INR",
+    });
+  }, [items, subtotal]);
 
   const applyCoupon = async () => {
     if (!codeText.trim()) return;

@@ -24,6 +24,7 @@ import { ShippingEstimator } from "@/components/ShippingEstimator";
 import { formatINR, productRating } from "@/lib/shopify";
 import { fetchProductByHandle, fetchProducts } from "@/lib/catalog";
 import { useCartStore } from "@/stores/cartStore";
+import { pixelTrack } from "@/lib/analytics";
 
 const LANGUAGES = ["English", "Hindi", "Bilingual"] as const;
 
@@ -78,6 +79,17 @@ function ProductDetail() {
     setVariantIndex(0);
     setShowVideo(false);
   }, [handle]);
+
+  useEffect(() => {
+    if (!product) return;
+    pixelTrack("ViewContent", {
+      content_ids: [handle],
+      content_name: product.node.title,
+      content_type: "product",
+      value: parseFloat(product.node.priceRange?.minVariantPrice?.amount ?? "0"),
+      currency: "INR",
+    });
+  }, [product, handle]);
 
   if (loadingProduct) {
     return (
