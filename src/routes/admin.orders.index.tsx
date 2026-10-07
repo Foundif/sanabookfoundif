@@ -160,6 +160,17 @@ function AdminOrders() {
                   <td className="px-4 py-3">
                     <p className="font-semibold">{o.full_name}</p>
                     <p className="text-xs text-muted-foreground">{o.email}</p>
+                    <p className="text-xs text-muted-foreground">{o.phone}</p>
+                    {(o as { payment_status?: string }).payment_status !== "paid" && o.phone && (
+                      <a
+                        href={waLink(o)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-flex items-center rounded-full bg-leaf/15 px-2.5 py-0.5 text-[11px] font-bold text-leaf hover:bg-leaf/25"
+                      >
+                        WhatsApp follow-up
+                      </a>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
                     {new Date(o.created_at).toLocaleDateString("en-IN", {
