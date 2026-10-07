@@ -1,14 +1,19 @@
 /** Lightweight event tracking + Meta Pixel loader.
  * Database logging is restricted to avoid high cloud query costs.
- * Meta Pixel handles analytics for free without consuming database credits.
+ * Meta Pixel only runs on the live domain so preview/editor visits never reach Meta.
  */
 
 type Fbq = (...a: unknown[]) => void;
 const w = () => window as unknown as { fbq?: Fbq };
 
+const ALLOWED_DOMAINS = ["sanabooks.in", "www.sanabooks.in"];
+
+function isLiveDomain() {
+  return typeof window !== "undefined" && ALLOWED_DOMAINS.includes(window.location.hostname);
+}
+
 export function track(_event: string, _label?: string | null, _meta: Record<string, unknown> = {}) {
-  // Database writes disabled to reduce cloud usage under 5-10 credits/month.
-  // Real business data (orders, messages, accounts) is preserved.
+  // Database writes disabled to reduce cloud usage.
 }
 
 /** Captures WhatsApp / Contact clicks for Meta Pixel without hitting the database. */
@@ -18,10 +23,7 @@ export function installClickTracking() {
     if (!el) return;
     const label = (el.dataset["track"] || el.getAttribute("aria-label") || el.textContent || "").trim();
     const href = el.getAttribute("href") || "";
-
-    if (/wa\.me|whatsapp/i.test(href) || /whatsapp/i.test(label)) {
-      w().fbq?.("track", "Contact");
-    }
+    if (/wa\.me|whatsapp/i.test(href) || /whatsapp/i.test(label)) pixelTrack("Contact");
   };
   document.addEventListener("click", handler, { capture: true });
   return () => document.removeEventListener("click", handler, { capture: true });
@@ -29,7 +31,7 @@ export function installClickTracking() {
 
 let pixelLoaded = false;
 export function loadMetaPixel(pixelId: string) {
-  if (pixelLoaded || !pixelId || typeof window === "undefined") return;
+  if (pixelLoaded || !pixelId || !isLiveDomain()) return;
   pixelLoaded = true;
   /* eslint-disable */
   // @ts-ignore
@@ -55,5 +57,6 @@ export function loadMetaPixel(pixelId: string) {
 }
 
 export function pixelTrack(event: string, params?: Record<string, unknown>) {
-  if (typeof window !== "undefined") w().fbq?.("track", event, params);
+  if (!isLiveDomain()) return;
+  w().fbq?.("track", event, params);
 }
